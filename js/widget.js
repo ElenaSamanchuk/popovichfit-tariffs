@@ -90,7 +90,8 @@
     widget.style.width = DESIGN_W + "px";
     widget.style.maxWidth = DESIGN_W + "px";
     widget.style.zoom = String(scale);
-    if (wrap) wrap.style.height = Math.ceil(widget.offsetHeight * scale) + "px";
+    var visualH = Math.ceil(widget.getBoundingClientRect().height || widget.offsetHeight * scale);
+    if (wrap) wrap.style.height = visualH + "px";
     return scale;
   }
 
@@ -98,6 +99,8 @@
     var scale = applyTildaScale();
     var widget = $(".pf-widget");
     if (widget && scale !== 1) {
+      var visual = widget.getBoundingClientRect().height;
+      if (visual > 0) return Math.ceil(visual);
       return Math.ceil(widget.offsetHeight * scale);
     }
     var doc = document.documentElement;
@@ -321,18 +324,25 @@
     );
   }
 
+  function isCuratorCard(card) {
+    return /куратор|тренер/i.test(card.title || "") || /-trener$/.test(card.id || "");
+  }
+
   function renderCard(card) {
     var selectedId = state.selected[card.id];
     var opt = optionById(card, selectedId);
     var streams = (card.options || []).filter(function (o) { return o.action !== "popup"; });
     var subs = (card.options || []).filter(function (o) { return o.action === "popup"; });
     var tagCls = card.spotsLimited ? "pf-tag pf-tag--limited" : "pf-tag pf-tag--open";
+    var extraCls = "pf-tag pf-tag--extra";
+    if (/самостоятельн/i.test(card.extraBadge || "")) extraCls += " pf-tag--selfpace";
     var extra = card.extraBadge
-      ? '<span class="pf-tag pf-tag--extra">' + esc(card.extraBadge) + "</span>"
+      ? '<span class="' + extraCls + '">' + esc(card.extraBadge) + "</span>"
       : "";
     var buyLabel = opt.action === "popup" ? (state.config.plashka && state.config.plashka.cta) || "Оформить подписку" : card.buyLabel;
+    var cardCls = "pf-card" + (isCuratorCard(card) ? " pf-card--curator" : "");
     return (
-      '<article class="pf-card" data-card-id="' + esc(card.id) + '">' +
+      '<article class="' + cardCls + '" data-card-id="' + esc(card.id) + '">' +
         (card.discountBadge ? '<span class="pf-card__badge">' + esc(card.discountBadge) + "</span>" : "") +
         '<h3 class="pf-card__title">' + esc(card.title) + "</h3>" +
         '<div class="pf-card__tags">' +
@@ -350,10 +360,12 @@
             '<span class="pf-price__name">' + esc(card.priceLabel) + "</span>" +
             '<span class="pf-price__new">' + esc(opt.newPrice) + "</span>" +
           "</div>" +
-          (card.discountUntil || opt.oldPrice
+          (card.discountUntil || String(opt.oldPrice || "").trim()
             ? '<div class="pf-price__row">' +
                 (card.discountUntil ? '<span class="pf-price__until">' + esc(card.discountUntil) + "</span>" : "<span></span>") +
-                (opt.oldPrice ? '<span class="pf-price__old">' + esc(opt.oldPrice) + "</span>" : "") +
+                (String(opt.oldPrice || "").trim()
+                  ? '<span class="pf-price__old">' + esc(opt.oldPrice) + "</span>"
+                  : "") +
               "</div>"
             : "") +
         "</div>" +

@@ -252,7 +252,6 @@
       box.appendChild(field("Доп. бейдж", card.extraBadge, function (v) { card.extraBadge = v; }));
       var pr = grid();
       pr.appendChild(field("Подпись цены", card.priceLabel, function (v) { card.priceLabel = v; }));
-      pr.appendChild(field("Подпись цены на телефоне", card.priceLabelMobile || "", function (v) { card.priceLabelMobile = v; }));
       box.appendChild(pr);
       box.appendChild(field("Кнопка покупки", card.buyLabel, function (v) { card.buyLabel = v; }));
       if (card.options && card.options.length) {
