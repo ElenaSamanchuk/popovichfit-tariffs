@@ -6,8 +6,24 @@
   <title>Админка — курс силовые</title>
   <link rel="stylesheet" href="css/admin.css">
 </head>
-<body>
-  <div class="admin">
+<body class="is-locked">
+  <div id="login-gate" class="login-gate">
+    <form id="login-form" class="login-card">
+      <h1>Вход в админку</h1>
+      <p class="lead">Общий доступ для команды PopovichFit. Случайные посетители сохранить не смогут.</p>
+      <label for="login-user">Логин</label>
+      <input id="login-user" name="username" type="text" autocomplete="username" required>
+      <label for="login-pass">Пароль</label>
+      <input id="login-pass" name="password" type="password" autocomplete="current-password" required>
+      <label class="check">
+        <input id="login-remember" type="checkbox">
+        Запомнить на этом компьютере
+      </label>
+      <button type="submit" class="btn">Войти</button>
+      <p class="status" id="login-status"></p>
+    </form>
+  </div>
+  <div class="admin" id="admin-app">
     <aside class="admin__form">
       <div class="bar">
         <h1>Админка: силовые</h1>
@@ -19,16 +35,26 @@
         <div class="row save-row">
           <button type="button" class="btn" id="save">Сохранить</button>
           <button type="button" class="btn btn--ghost" id="reload-preview">Обновить превью</button>
+          <button type="button" class="btn btn--ghost" id="logout">Выйти</button>
         </div>
         <p class="status" id="status"></p>
-        <details class="settings" id="publish-settings">
-          <summary>Доступ к GitHub — нужен один раз, чтобы сохранить на сайт</summary>
-          <label for="token">Токен GitHub (право <code>repo</code>)</label>
-          <input id="token" type="password" autocomplete="off" placeholder="ghp_… хранится только в этом браузере">
-          <p class="hint">GitHub → Settings → Developer settings → Personal access tokens. Токен в репозиторий не попадает.</p>
+        <p class="github-change" id="change-key-wrap" hidden>
+          <button type="button" class="linkish" id="change-key">Сменить ключ</button>
+        </p>
+        <div id="github-setup" class="github-setup" hidden>
+          <h2>Подключение GitHub (один раз)</h2>
+          <p class="hint">Только владелец. Вставьте Personal Access Token с правом <code>repo</code> (Contents: write) на репозиторий ElenaSamanchuk/popovichfit-tariffs. Коллегам это поле не нужно — им достаточно войти и нажать «Сохранить».</p>
+          <label for="token">Токен GitHub</label>
+          <input id="token" type="password" autocomplete="off" placeholder="ghp_…">
           <label for="repo">Репозиторий</label>
           <input id="repo" type="text" value="ElenaSamanchuk/popovichfit-tariffs">
-          <label for="image-file">Загрузить картинку плашки</label>
+          <div class="row">
+            <button type="button" class="btn btn--ghost" id="save-token">Зашифровать и сохранить ключ</button>
+            <button type="button" class="btn btn--ghost" id="cancel-key" hidden>Отмена</button>
+          </div>
+        </div>
+        <details class="settings" id="image-settings">
+          <summary>Загрузить картинку плашки</summary>
           <input id="image-file" type="file" accept="image/*">
         </details>
       </div>

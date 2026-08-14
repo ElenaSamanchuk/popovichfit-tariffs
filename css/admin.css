@@ -38,6 +38,48 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; font-family: "Manrope", sans-serif; background: var(--a-bg); color: var(--a-text); }
+body.is-locked { overflow: hidden; }
+body.is-locked .admin,
+body.is-locked .admin-pick { display: none; }
+.login-gate {
+  display: none;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+body.is-locked .login-gate { display: flex; }
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border: 1px solid var(--a-line);
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 8px 30px rgba(31, 36, 48, 0.06);
+}
+.login-card .btn { width: 100%; margin-top: 16px; }
+.github-setup {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px dashed var(--a-line);
+  border-radius: 10px;
+  background: #fafbfc;
+}
+.github-setup h2 { font-size: 14px; margin: 0 0 8px; }
+.github-change { margin: 4px 0 0; }
+.linkish {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--a-blue);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
 .admin { display: grid; grid-template-columns: minmax(380px, 500px) 1fr; min-height: 100vh; }
 .admin__form {
   overflow: auto;

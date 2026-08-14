@@ -11,8 +11,24 @@
     .admin-pick .lead { margin-bottom: 20px; }
   </style>
 </head>
-<body>
-  <main class="admin-pick">
+<body class="is-locked">
+  <div id="login-gate" class="login-gate">
+    <form id="login-form" class="login-card">
+      <h1>Вход в админку</h1>
+      <p class="lead">Общий доступ для команды PopovichFit. Случайные посетители сохранить не смогут.</p>
+      <label for="login-user">Логин</label>
+      <input id="login-user" name="username" type="text" autocomplete="username" required>
+      <label for="login-pass">Пароль</label>
+      <input id="login-pass" name="password" type="password" autocomplete="current-password" required>
+      <label class="check">
+        <input id="login-remember" type="checkbox">
+        Запомнить на этом компьютере
+      </label>
+      <button type="submit" class="btn">Войти</button>
+      <p class="status" id="login-status"></p>
+    </form>
+  </div>
+  <main class="admin-pick" id="admin-app">
     <h1>Админка тарифов</h1>
     <p class="lead">Выберите курс. Дальше — обычные поля, превью справа и кнопка «Сохранить».</p>
     <div class="course-tabs">
@@ -20,6 +36,7 @@
       <a class="course-tab" href="admin-silovye.html">Силовые</a>
     </div>
     <p class="hint">Каждая админка правит только свой курс. Превью — черновик. На сайт и в Тильду изменения попадают после «Сохранить».</p>
+    <p><button type="button" class="btn btn--ghost" id="logout">Выйти</button></p>
   </main>
   <script>
     (function () {
@@ -28,5 +45,6 @@
       if (course === "silovye" || course === "silovoj") location.replace("admin-silovye.html");
     })();
   </script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

@@ -1,7 +1,13 @@
 (function () {
   var TOKEN_KEY = "PF_GH_TOKEN";
+  var SESSION_KEY = "PF_ADMIN_SESSION";
+  var PASS_KEY = "PF_ADMIN_K";
+  var LOCK_URL = "admin-lock.json";
+  var SECRET_URL = "admin-secret.json";
   var REPO_DEFAULT = "ElenaSamanchuk/popovichfit-tariffs";
   var BRANCH = "main";
+  var REMEMBER_MS = 7 * 24 * 60 * 60 * 1000;
+  var PBKDF2_ITER = 210000;
   var COURSES = {
     korrekciya: {
       id: "korrekciya",
@@ -26,6 +32,10 @@
   var preview = document.getElementById("preview");
   var statusEl = document.getElementById("status");
   var formRoot = document.getElementById("form-root");
+  var secretConfigured = false;
+  var changeKeyOpen = false;
+  var secretIssue = "";
+  var adminStarted = false;
 
   function resolveCourse() {
     var params = new URLSearchParams(location.search);
@@ -36,16 +46,335 @@
   }
 
   function setStatus(text, kind) {
+    if (!statusEl) return;
     statusEl.textContent = text || "";
     statusEl.className = "status" + (kind ? " " + kind : "");
   }
 
+  function setLoginStatus(text, kind) {
+    var el = document.getElementById("login-status");
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = "status" + (kind ? " " + kind : "");
+  }
+
   function token() {
-    return localStorage.getItem(TOKEN_KEY) || document.getElementById("token").value.trim();
+    return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY) || "";
+  }
+
+  function currentPassword() {
+    return sessionStorage.getItem(PASS_KEY) || localStorage.getItem(PASS_KEY) || "";
   }
 
   function repoName() {
-    return document.getElementById("repo").value.trim() || REPO_DEFAULT;
+    var el = document.getElementById("repo");
+    return (el && el.value.trim()) || REPO_DEFAULT;
+  }
+
+  function sha256Hex(str) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (buf) {
+      return Array.from(new Uint8Array(buf)).map(function (b) {
+        return b.toString(16).padStart(2, "0");
+      }).join("");
+    });
+  }
+
+  function hashesEqual(a, b) {
+    a = String(a || "").toLowerCase();
+    b = String(b || "").toLowerCase();
+    if (!a || !b || a.length !== b.length) return false;
+    var diff = 0;
+    for (var i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    return diff === 0;
+  }
+
+  function bufToB64(buf) {
+    var bytes = new Uint8Array(buf);
+    var bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+
+  function b64ToBytes(b64) {
+    var bin = atob(b64);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  function deriveAesKey(password, salt, iter) {
+    return crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(password),
+      "PBKDF2",
+      false,
+      ["deriveKey"]
+    ).then(function (material) {
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: salt, iterations: iter, hash: "SHA-256" },
+        material,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    });
+  }
+
+  function encryptPat(password, pat) {
+    var salt = crypto.getRandomValues(new Uint8Array(16));
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    return deriveAesKey(password, salt, PBKDF2_ITER).then(function (key) {
+      return crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        new TextEncoder().encode(pat)
+      );
+    }).then(function (ct) {
+      return {
+        v: 1,
+        kdf: "PBKDF2",
+        hash: "SHA-256",
+        iter: PBKDF2_ITER,
+        salt: bufToB64(salt),
+        iv: bufToB64(iv),
+        ct: bufToB64(ct)
+      };
+    });
+  }
+
+  function decryptPat(password, secret) {
+    var salt = b64ToBytes(secret.salt);
+    var iv = b64ToBytes(secret.iv);
+    var ct = b64ToBytes(secret.ct);
+    return deriveAesKey(password, salt, secret.iter || PBKDF2_ITER).then(function (key) {
+      return crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ct);
+    }).then(function (pt) {
+      return new TextDecoder().decode(pt);
+    });
+  }
+
+  function fetchJson(path) {
+    return fetch(path + "?t=" + Date.now(), { cache: "no-store" }).then(function (res) {
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(path + ": " + res.status);
+      return res.json();
+    });
+  }
+
+  function clearAuth() {
+    [sessionStorage, localStorage].forEach(function (store) {
+      store.removeItem(SESSION_KEY);
+      store.removeItem(PASS_KEY);
+      store.removeItem(TOKEN_KEY);
+    });
+  }
+
+  function writeAuth(remember, login, password, pat) {
+    var session = {
+      v: 1,
+      login: login,
+      remember: !!remember,
+      exp: remember ? Date.now() + REMEMBER_MS : 0
+    };
+    var raw = JSON.stringify(session);
+    sessionStorage.setItem(SESSION_KEY, raw);
+    sessionStorage.setItem(PASS_KEY, password);
+    if (pat) sessionStorage.setItem(TOKEN_KEY, pat);
+    else sessionStorage.removeItem(TOKEN_KEY);
+    if (remember) {
+      localStorage.setItem(SESSION_KEY, raw);
+      localStorage.setItem(PASS_KEY, password);
+      if (pat) localStorage.setItem(TOKEN_KEY, pat);
+      else localStorage.removeItem(TOKEN_KEY);
+    } else {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(PASS_KEY);
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  }
+
+  function cacheToken(pat) {
+    sessionStorage.setItem(TOKEN_KEY, pat);
+    var session = readSession();
+    if (session && session.remember) localStorage.setItem(TOKEN_KEY, pat);
+  }
+
+  function readSession() {
+    var raw = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    try {
+      var session = JSON.parse(raw);
+      if (session.remember && session.exp && Date.now() > session.exp) {
+        clearAuth();
+        return null;
+      }
+      if (!sessionStorage.getItem(SESSION_KEY) && session.remember) {
+        sessionStorage.setItem(SESSION_KEY, raw);
+        var password = localStorage.getItem(PASS_KEY);
+        var pat = localStorage.getItem(TOKEN_KEY);
+        if (password) sessionStorage.setItem(PASS_KEY, password);
+        if (pat) sessionStorage.setItem(TOKEN_KEY, pat);
+      }
+      return session;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function verifyCredentials(login, password, lock) {
+    return sha256Hex(login + ":" + password).then(function (hex) {
+      return hashesEqual(hex, lock.hash);
+    });
+  }
+
+  function updateGithubUi() {
+    var setup = document.getElementById("github-setup");
+    var changeWrap = document.getElementById("change-key-wrap");
+    var cancel = document.getElementById("cancel-key");
+    if (setup) setup.hidden = !(!secretConfigured || changeKeyOpen);
+    if (changeWrap) changeWrap.hidden = !secretConfigured || changeKeyOpen;
+    if (cancel) cancel.hidden = !secretConfigured || !changeKeyOpen;
+  }
+
+  function showGithubSetup() {
+    changeKeyOpen = true;
+    updateGithubUi();
+    var setup = document.getElementById("github-setup");
+    if (setup) setup.scrollIntoView({ block: "nearest" });
+  }
+
+  function loadSecret(password) {
+    return fetchJson(SECRET_URL).then(function (secret) {
+      if (!secret || !secret.ct) {
+        secretConfigured = false;
+        secretIssue = "missing";
+        updateGithubUi();
+        return { ok: false, reason: "missing" };
+      }
+      return decryptPat(password, secret).then(function (pat) {
+        cacheToken(pat);
+        secretConfigured = true;
+        secretIssue = "";
+        changeKeyOpen = false;
+        updateGithubUi();
+        return { ok: true };
+      }).catch(function () {
+        secretConfigured = true;
+        secretIssue = "decrypt";
+        changeKeyOpen = true;
+        updateGithubUi();
+        return { ok: false, reason: "decrypt" };
+      });
+    });
+  }
+
+  function applySecretStatus() {
+    if (!formRoot) return;
+    if (secretIssue === "decrypt") {
+      setStatus("Неверный пароль для ключа или ключ повреждён. Владелец может нажать «Сменить ключ».", "err");
+    } else if (secretIssue === "missing") {
+      setStatus("Ключ не настроен. Владелец должен один раз вставить GitHub-токен после входа.", "err");
+    }
+  }
+
+  function revealApp() {
+    document.body.classList.remove("is-locked");
+    var pass = document.getElementById("login-pass");
+    if (pass) pass.value = "";
+  }
+
+  function bindLogout() {
+    var btn = document.getElementById("logout");
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", function () {
+      clearAuth();
+      location.reload();
+    });
+  }
+
+  function bindGithubSetup() {
+    var saveBtn = document.getElementById("save-token");
+    var changeBtn = document.getElementById("change-key");
+    var cancelBtn = document.getElementById("cancel-key");
+    if (saveBtn && !saveBtn.dataset.bound) {
+      saveBtn.dataset.bound = "1";
+      saveBtn.addEventListener("click", saveGithubKey);
+    }
+    if (changeBtn && !changeBtn.dataset.bound) {
+      changeBtn.dataset.bound = "1";
+      changeBtn.addEventListener("click", function () {
+        showGithubSetup();
+      });
+    }
+    if (cancelBtn && !cancelBtn.dataset.bound) {
+      cancelBtn.dataset.bound = "1";
+      cancelBtn.addEventListener("click", function () {
+        changeKeyOpen = false;
+        var input = document.getElementById("token");
+        if (input) input.value = "";
+        updateGithubUi();
+      });
+    }
+  }
+
+  function afterUnlock() {
+    bindLogout();
+    bindGithubSetup();
+    updateGithubUi();
+    if (formRoot && !adminStarted) startAdmin();
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    if (!crypto.subtle) {
+      setLoginStatus("Откройте админку по https или через localhost — так работает вход.", "err");
+      return;
+    }
+    var login = document.getElementById("login-user").value.trim();
+    var password = document.getElementById("login-pass").value;
+    var remember = document.getElementById("login-remember").checked;
+    setLoginStatus("Проверяю…");
+    fetchJson(LOCK_URL).then(function (lock) {
+      if (!lock || !lock.hash) throw new Error("нет admin-lock.json");
+      return verifyCredentials(login, password, lock).then(function (ok) {
+        if (!ok) {
+          setLoginStatus("Неверный логин или пароль.", "err");
+          return null;
+        }
+        writeAuth(remember, login, password, "");
+        return loadSecret(password).then(function () {
+          revealApp();
+          afterUnlock();
+        });
+      });
+    }).catch(function (err) {
+      setLoginStatus("Не удалось проверить вход: " + err.message, "err");
+    });
+  }
+
+  function tryRestore() {
+    if (!crypto.subtle) return Promise.resolve(false);
+    var session = readSession();
+    var password = currentPassword();
+    if (!session || !password) return Promise.resolve(false);
+    return fetchJson(LOCK_URL).then(function (lock) {
+      if (!lock || !lock.hash) return false;
+      var login = session.login || lock.login || "";
+      return verifyCredentials(login, password, lock).then(function (ok) {
+        if (!ok) {
+          clearAuth();
+          return false;
+        }
+        return loadSecret(password).then(function () {
+          revealApp();
+          afterUnlock();
+          return true;
+        });
+      });
+    }).catch(function () {
+      return false;
+    });
   }
 
   function deepClone(obj) {
@@ -362,8 +691,8 @@
         persistDraft();
         renderForm();
         setStatus("Технический JSON применён в превью. Чтобы опубликовать, нажмите «Сохранить».", "ok");
-      } catch (e) {
-        setStatus("Ошибка JSON: " + e.message, "err");
+      } catch (err) {
+        setStatus("Ошибка JSON: " + err.message, "err");
       }
     });
     adv.appendChild(sum);
@@ -376,114 +705,157 @@
     return btoa(unescape(encodeURIComponent(str)));
   }
 
-  async function githubGetSha(repo, path) {
-    var res = await fetch("https://api.github.com/repos/" + repo + "/contents/" + path + "?ref=" + BRANCH, {
-      headers: { Authorization: "Bearer " + token(), Accept: "application/vnd.github+json" }
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error("GET " + path + ": " + res.status + " " + await res.text());
-    var data = await res.json();
-    return data.sha;
+  function githubHeaders(pat) {
+    return {
+      Authorization: "Bearer " + (pat || token()),
+      Accept: "application/vnd.github+json"
+    };
   }
 
-  async function githubPut(repo, path, content, message, sha) {
+  function githubGetSha(repo, path, pat) {
+    return fetch("https://api.github.com/repos/" + repo + "/contents/" + path + "?ref=" + BRANCH, {
+      headers: githubHeaders(pat)
+    }).then(function (res) {
+      if (res.status === 404) return null;
+      if (!res.ok) {
+        return res.text().then(function (text) {
+          throw new Error("GET " + path + ": " + res.status + " " + text);
+        });
+      }
+      return res.json().then(function (data) { return data.sha; });
+    });
+  }
+
+  function githubPut(repo, path, content, message, sha, pat) {
     var body = { message: message, content: utf8ToB64(content), branch: BRANCH };
     if (sha) body.sha = sha;
-    var res = await fetch("https://api.github.com/repos/" + repo + "/contents/" + path, {
+    var headers = githubHeaders(pat);
+    headers["Content-Type"] = "application/json";
+    return fetch("https://api.github.com/repos/" + repo + "/contents/" + path, {
       method: "PUT",
-      headers: {
-        Authorization: "Bearer " + token(),
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json"
-      },
+      headers: headers,
       body: JSON.stringify(body)
+    }).then(function (res) {
+      if (!res.ok) {
+        return res.text().then(function (text) {
+          throw new Error("PUT " + path + ": " + res.status + " " + text);
+        });
+      }
+      return res.json();
     });
-    if (!res.ok) throw new Error("PUT " + path + ": " + res.status + " " + await res.text());
-    return res.json();
   }
 
-  async function putFile(repo, path, content, message) {
-    var sha = await githubGetSha(repo, path);
-    return githubPut(repo, path, content, message, sha);
+  function putFile(repo, path, content, message, pat) {
+    return githubGetSha(repo, path, pat).then(function (sha) {
+      return githubPut(repo, path, content, message, sha, pat);
+    });
   }
 
-  function openPublish() {
-    var pub = document.getElementById("publish-settings");
-    if (pub) pub.open = true;
+  function needOwnerToken() {
+    showGithubSetup();
+    setStatus("Владелец должен один раз вставить GitHub-токен после входа.", "err");
   }
 
-  async function saveConfig() {
+  function saveConfig() {
     var t = token();
     if (!t) {
-      openPublish();
-      setStatus("Откройте «Доступ к GitHub», вставьте токен с правом repo и нажмите «Сохранить» ещё раз.", "err");
+      needOwnerToken();
       return;
     }
-    localStorage.setItem(TOKEN_KEY, t);
     var json = JSON.stringify(config, null, 2) + "\n";
     var repo = repoName();
-    var paths = [course.config].concat(course.alsoSave || []);
     setStatus("Сохраняю на сайт…");
-    try {
-      await putFile(repo, course.config, json, "chore: update " + course.config);
-      for (var i = 0; i < (course.alsoSave || []).length; i++) {
-        var extra = course.alsoSave[i];
-        await putFile(repo, extra, json, "chore: sync " + extra + " with " + course.config);
-      }
+    putFile(repo, course.config, json, "chore: update " + course.config, t).then(function () {
+      var extras = course.alsoSave || [];
+      var chain = Promise.resolve();
+      extras.forEach(function (extra) {
+        chain = chain.then(function () {
+          return putFile(repo, extra, json, "chore: sync " + extra + " with " + course.config, t);
+        });
+      });
+      return chain;
+    }).then(function () {
       persistDraft();
       if (preview) preview.src = previewUrl();
       setStatus("Сохранено. Через минуту обновятся живая страница и iframe на Тильде.", "ok");
-    } catch (e) {
-      openPublish();
-      setStatus("Не удалось сохранить: " + e.message, "err");
-    }
+    }).catch(function (err) {
+      showGithubSetup();
+      setStatus("Не удалось сохранить: " + err.message, "err");
+    });
   }
 
-  async function uploadImage(file) {
+  function saveGithubKey() {
+    var input = document.getElementById("token");
+    var pat = input ? input.value.trim() : "";
+    var password = currentPassword();
+    if (!pat) {
+      setStatus("Вставьте токен GitHub.", "err");
+      return;
+    }
+    if (!password) {
+      setStatus("Сессия истекла. Войдите снова.", "err");
+      return;
+    }
+    setStatus("Шифрую и сохраняю ключ…");
+    encryptPat(password, pat).then(function (payload) {
+      var json = JSON.stringify(payload, null, 2) + "\n";
+      return putFile(repoName(), SECRET_URL, json, "chore: update encrypted admin secret", pat);
+    }).then(function () {
+      cacheToken(pat);
+      secretConfigured = true;
+      secretIssue = "";
+      changeKeyOpen = false;
+      if (input) input.value = "";
+      updateGithubUi();
+      setStatus("Ключ сохранён. Дальше коллегам достаточно войти и нажать «Сохранить».", "ok");
+    }).catch(function (err) {
+      setStatus("Не удалось сохранить ключ: " + err.message, "err");
+    });
+  }
+
+  function uploadImage(file) {
     var t = token();
     if (!t) {
-      openPublish();
-      setStatus("Для загрузки картинки нужен токен в блоке «Доступ к GitHub».", "err");
+      needOwnerToken();
       return;
     }
     var name = "assets/" + Date.now() + "-" + file.name.replace(/[^\w.\-]+/g, "_");
-    var buf = await file.arrayBuffer();
-    var bytes = new Uint8Array(buf);
-    var bin = "";
-    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    var b64 = btoa(bin);
-    setStatus("Загружаю картинку…");
-    try {
-      var repo = repoName();
-      var res = await fetch("https://api.github.com/repos/" + repo + "/contents/" + name, {
+    file.arrayBuffer().then(function (buf) {
+      var bytes = new Uint8Array(buf);
+      var bin = "";
+      for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      var b64 = btoa(bin);
+      setStatus("Загружаю картинку…");
+      var headers = githubHeaders(t);
+      headers["Content-Type"] = "application/json";
+      return fetch("https://api.github.com/repos/" + repoName() + "/contents/" + name, {
         method: "PUT",
-        headers: {
-          Authorization: "Bearer " + t,
-          Accept: "application/vnd.github+json",
-          "Content-Type": "application/json"
-        },
+        headers: headers,
         body: JSON.stringify({
           message: "chore: upload " + name,
           content: b64,
           branch: BRANCH
         })
+      }).then(function (res) {
+        if (!res.ok) {
+          return res.text().then(function (text) {
+            throw new Error(text);
+          });
+        }
+        config.plashka.image = name;
+        persistDraft();
+        renderForm();
+        setStatus("Картинка загружена. Нажмите «Сохранить», чтобы она появилась на сайте.", "ok");
       });
-      if (!res.ok) throw new Error(await res.text());
-      config.plashka.image = name;
-      persistDraft();
-      renderForm();
-      setStatus("Картинка загружена. Нажмите «Сохранить», чтобы она появилась на сайте.", "ok");
-    } catch (e) {
-      setStatus("Ошибка загрузки: " + e.message, "err");
-    }
+    }).catch(function (err) {
+      setStatus("Ошибка загрузки: " + err.message, "err");
+    });
   }
 
   function boot(initial) {
     config = ensureShape(deepClone(initial));
     persistDraft();
     renderForm();
-    document.getElementById("token").value = localStorage.getItem(TOKEN_KEY) || "";
-    document.getElementById("repo").value = REPO_DEFAULT;
     if (preview && !preview.getAttribute("src")) preview.src = previewUrl();
     document.getElementById("save").addEventListener("click", saveConfig);
     document.getElementById("reload-preview").addEventListener("click", function () {
@@ -496,17 +868,25 @@
     preview.addEventListener("load", function () {
       persistDraft();
     });
-    setStatus("Поля загружены. Превью справа обновляется при вводе. На сайт — только после «Сохранить».");
+    if (secretIssue) applySecretStatus();
+    else setStatus("Поля загружены. Превью справа обновляется при вводе. На сайт — только после «Сохранить».");
   }
 
-  fetch(course.config + "?t=" + Date.now(), { cache: "no-store" })
-    .then(function (r) {
-      if (!r.ok) throw new Error(r.status + " " + r.statusText);
-      return r.json();
-    })
-    .then(boot)
-    .catch(function (e) {
-      formRoot.innerHTML = "<p class=\"status err\">Не удалось загрузить поля. Обновите страницу.</p>";
-      setStatus("Не удалось загрузить данные: " + e.message, "err");
-    });
+  function startAdmin() {
+    adminStarted = true;
+    fetch(course.config + "?t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.status + " " + r.statusText);
+        return r.json();
+      })
+      .then(boot)
+      .catch(function (err) {
+        formRoot.innerHTML = "<p class=\"status err\">Не удалось загрузить поля. Обновите страницу.</p>";
+        setStatus("Не удалось загрузить данные: " + err.message, "err");
+      });
+  }
+
+  var loginForm = document.getElementById("login-form");
+  if (loginForm) loginForm.addEventListener("submit", handleLogin);
+  tryRestore();
 })();
