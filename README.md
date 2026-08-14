@@ -1,6 +1,6 @@
 # PopovichFit — виджет тарифов для Тильды
 
-Две отдельные публичные страницы (два iframe) и две отдельные админки. Контент живёт в JSON и публикуется через GitHub Pages.
+Две отдельные публичные страницы (два iframe) и две отдельные админки. Редактор — обычные поля и превью; на сайт публикуется через GitHub Pages.
 
 ## Публичные страницы
 
@@ -10,10 +10,10 @@
 
 ## Админки
 
-Каждая админка правит **только свой** файл и коммитит его в `main` через GitHub Contents API. Превью справа — черновик в браузере. Живая страница и iframe на Тильде меняются только после **«Сохранить в GitHub»**.
+Каждая админка — форма с полями (шапка, плашка, карточки, попап) и живым превью справа. Кнопка **«Сохранить»** коммитит конфиг курса в `main`. Сырой JSON спрятан в свёрнутом блоке «Для разработчика».
 
-- **Админка коррекции:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin-korrekciya.html → `config-korrekciya.json`
-- **Админка силовых:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin-silovye.html → `config-silovye.json`
+- **Админка коррекции:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin-korrekciya.html
+- **Админка силовых:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin-silovye.html
 - **Выбор админки:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin.html
 
 Черновики не пересекаются: `PF_ADMIN_DRAFT_korrekciya` и `PF_ADMIN_DRAFT_silovye`.
@@ -21,10 +21,10 @@
 ### Как сохранить изменение
 
 1. Откройте нужную админку.
-2. Вставьте GitHub Personal Access Token с правом `repo` (хранится только в `localStorage` браузера).
-3. Правите цены, ссылки, тексты — справа превью.
-4. Нажмите **Сохранить в GitHub**. Админка записывает JSON в репозиторий.
-5. GitHub Pages пересобирает сайт. Виджет грузит конфиг с `cache: no-store` и `?t=`.
+2. Один раз откройте «Доступ к GitHub» и вставьте Personal Access Token с правом `repo` (хранится только в браузере).
+3. Правите поля — справа превью обновляется сразу.
+4. Сравните превью и нажмите **Сохранить**.
+5. GitHub Pages пересоберёт сайт; iframe на Тильде подтянет новый контент.
 
 Нужный scope токена: **`repo`**.
 
