@@ -1,0 +1,183 @@
+{
+  "meta": {
+    "courseId": "silovoj",
+    "supportUrl": "https://t.me/popovichfit",
+    "supportText": "напишите в техническую поддержку, поможем разобраться."
+  },
+  "header": {
+    "title": "Курс «силовой»",
+    "subtitle": "Укрепление тела, рельеф и сила. Для тех, кто хочет поработать не только над осанкой, но и над формами.",
+    "startLabel": "старт нового потока — 31 августа",
+    "durationLabel": "длительность — 5 недель"
+  },
+  "plashka": {
+    "visible": true,
+    "eyebrow": "Оформить подписку на курс",
+    "newBadge": "NEW",
+    "title": "Подписка: продолжай без лишних действий",
+    "text": "Доступ к каждому новому потоку списывается автоматически. Никаких напоминалок — просто продолжаешь тренироваться.",
+    "priceFrom": "от 2 499 р.",
+    "priceInstead": "вместо 3 999 р. разово",
+    "limeBadge": "ВЫГОДНЕЕ · ТОЛЬКО ДЛЯ ПРОДЛЕНЦЕВ",
+    "features": [
+      "✓  Не надо помнить про продление",
+      "✓  Цена ниже, чем при разовом оформлении"
+    ],
+    "cta": "Оформить подписку",
+    "image": "assets/flower.png"
+  },
+  "renewalTitle": "Или продолжить по продлению:",
+  "cards": [
+    {
+      "id": "silovoj",
+      "visible": true,
+      "title": "Силовой",
+      "discountBadge": "- 30%",
+      "spotsLabel": "Количество мест НЕ ограничено",
+      "spotsLimited": false,
+      "extraBadge": "",
+      "description": "Тариф подразумевает самостоятельно прохождение программы курса без обратной связи от куратора",
+      "priceLabel": "Стоимость продления",
+      "priceLabelMobile": "Стоимость",
+      "discountUntil": "скидка до 18 июня",
+      "buyLabel": "купить",
+      "defaultOption": 0,
+      "options": [
+        {
+          "id": "1",
+          "label": "1 поток",
+          "selectLabel": "выбрать",
+          "newPrice": "3 799 р.",
+          "oldPrice": "",
+          "link": "https://lk.popovichfit.ru/payments/tariff_D9nEQP/checkout",
+          "action": "pay"
+        },
+        {
+          "id": "3",
+          "label": "3 потока",
+          "selectLabel": "выбрать",
+          "newPrice": "9 599 р.",
+          "oldPrice": "12 899 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_6KWjno/checkout",
+          "action": "pay"
+        },
+        {
+          "id": "6",
+          "label": "6 потоков",
+          "selectLabel": "выбрать",
+          "newPrice": "17 799 р.",
+          "oldPrice": "24 399 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_qoAM5o/checkout",
+          "action": "pay"
+        },
+        {
+          "id": "sub",
+          "label": "Подписка",
+          "selectLabel": "выбрать",
+          "badge": "выгоднее всего",
+          "newPrice": "от 2 499 р.",
+          "oldPrice": "",
+          "link": "",
+          "action": "popup"
+        }
+      ]
+    },
+    {
+      "id": "silovoj-trener",
+      "visible": true,
+      "title": "Силовой с куратором",
+      "discountBadge": "- 30%",
+      "spotsLabel": "Количество мест ограничено",
+      "spotsLimited": true,
+      "extraBadge": "Разбор упражнений",
+      "description": "Тариф вклюючает в себя проверку техники выполнения упражнений с рекомендациями тренера",
+      "priceLabel": "Стоимость продления",
+      "priceLabelMobile": "Стоимость",
+      "discountUntil": "скидка до 18 июня",
+      "buyLabel": "купить",
+      "defaultOption": 0,
+      "options": [
+        {
+          "id": "1",
+          "label": "1 поток",
+          "selectLabel": "выбрать",
+          "newPrice": "5 599 р.",
+          "oldPrice": "7 699 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_Jo4XGo/checkout",
+          "action": "pay"
+        },
+        {
+          "id": "3",
+          "label": "3 потока",
+          "selectLabel": "выбрать",
+          "newPrice": "14 899 р.",
+          "oldPrice": "19 299 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_2Kd1wP/checkout",
+          "action": "pay"
+        },
+        {
+          "id": "6",
+          "label": "6 потоков",
+          "selectLabel": "выбрать",
+          "newPrice": "25 799 р.",
+          "oldPrice": "34 799 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_wo2xkP/checkout",
+          "action": "pay"
+        },
+        {
+          "id": "sub",
+          "label": "Подписка",
+          "selectLabel": "выбрать",
+          "badge": "выгоднее всего",
+          "newPrice": "от 3 499 р.",
+          "oldPrice": "",
+          "link": "",
+          "action": "popup"
+        }
+      ]
+    }
+  ],
+  "popup": {
+    "title": "Оформление подписки",
+    "lead": "Подписка это автоматическое продление доступа перед каждым новым потоком.",
+    "lead2": "Подключаете один раз, дальше всё происходит само.",
+    "chooseLabel": "Выберите тариф:",
+    "planCaption": "Тариф подписки",
+    "oneTimeLabel": "Разовое продление:",
+    "subPriceLabel": "Стоимость с подпиской:",
+    "howTitle": "Как это работает:",
+    "howItems": [
+      "Вы оформляете подписку и привязываете карту.",
+      "За 5 дней до окончания потока мы списываем оплату за следующий.",
+      "За сутки до списания придёт письмо с напоминанием.",
+      "Доступ к новому потоку открывается сразу после оплаты."
+    ],
+    "failTitle": "Если платёж не прошёл:",
+    "failItems": [
+      "Система сделает ещё 2 попытки в течение следующих дней.",
+      "Если ни одна не успела, подписка просто не продлевается, доступ не открывается."
+    ],
+    "failSupportPrefix": "Если у вас появятся вопросы по подписке,",
+    "rfNote": "Подписка доступна только для карт РФ",
+    "cta": "Оформить подписку",
+    "defaultPlan": 1,
+    "plans": [
+      {
+        "id": "silovoj",
+        "title": "Силовой",
+        "oneTimePrice": "3 499 р.",
+        "subPrice": "2 499 р.",
+        "discountBadge": "- 10%",
+        "link": ""
+      },
+      {
+        "id": "silovoj-trener",
+        "title": "Силовой с куратором",
+        "oneTimePrice": "4 999 р.",
+        "subPrice": "3 499 р.",
+        "discountBadge": "- 10%",
+        "link": ""
+      }
+    ]
+  }
+}
