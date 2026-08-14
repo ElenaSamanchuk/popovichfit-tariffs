@@ -875,7 +875,7 @@ html.pf-modal-open.pf-iframe-fixed .pf-overlay {
 /* Mobile: Figma 320w light (2356:1710), fluid up to tablet */
 @media (max-width: 760px) {
   .pf-widget { padding: 16px 10px 32px; }
-  .pf-header { margin-bottom: 20px; }
+  .pf-header { margin-bottom: 32px; }
   .pf-header__row { flex-direction: column-reverse; gap: 12px; }
   .pf-header__title { font-size: 18px; line-height: 1.2; }
   .pf-header__pills {
@@ -892,7 +892,7 @@ html.pf-modal-open.pf-iframe-fixed .pf-overlay {
     flex-shrink: 0;
   }
   .pf-header__sub { font-size: 12px; line-height: 1.2; color: #606060; overflow-wrap: anywhere; }
-  .pf-plashka-wrap { margin-bottom: 20px; overflow: visible; }
+  .pf-plashka-wrap { margin-bottom: 32px; overflow: visible; }
   .pf-plashka-head { gap: 8px; margin-bottom: 15px; }
   .pf-plashka-head__title { font-size: 12px; line-height: 1.2; }
   .pf-badge-new { font-size: 8px; padding: 2px 8px; line-height: 1.35; }
