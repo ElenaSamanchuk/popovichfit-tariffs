@@ -16,6 +16,9 @@
   };
   var inIframe = window.parent && window.parent !== window;
   var leaveMs = 300;
+  var lastHeight = 0;
+  var heightRaf = 0;
+  var contentRO = null;
 
   function $(sel, root) {
     return (root || document).querySelector(sel);
@@ -43,15 +46,65 @@
     }
   }
 
-  function sendHeight() {
-    if (state.popupOpen || state.popupLeaving) return;
-    var root = $("#pf-root");
-    if (!root) return;
+  function measure() {
+    var doc = document.documentElement;
+    var body = document.body;
+    if (!body) return 0;
     var widget = $(".pf-widget");
-    if (!widget) return;
-    var height = Math.ceil(widget.getBoundingClientRect().height || widget.scrollHeight);
-    if (height < 100) return;
+    var root = $("#pf-root");
+    var scrollY = window.scrollY || doc.scrollTop || 0;
+    var values = [
+      body.scrollHeight,
+      body.offsetHeight,
+      doc.scrollHeight,
+      doc.offsetHeight
+    ];
+    function addBox(el) {
+      if (!el) return;
+      var rect = el.getBoundingClientRect();
+      values.push(
+        el.scrollHeight,
+        el.offsetHeight,
+        Math.ceil(rect.height),
+        Math.ceil(rect.bottom + scrollY)
+      );
+    }
+    addBox(root);
+    addBox(widget);
+    return Math.ceil(Math.max.apply(Math, values));
+  }
+
+  function sendHeight() {
+    heightRaf = 0;
+    if (state.popupOpen || state.popupLeaving) return;
+    var height = measure();
+    if (!height || height < 100) return;
+    if (Math.abs(height - lastHeight) < 2) return;
+    lastHeight = height;
     postToParent({ type: RESIZE_TYPE, height: height });
+  }
+
+  function scheduleHeight() {
+    if (heightRaf) return;
+    heightRaf = requestAnimationFrame(sendHeight);
+  }
+
+  function watchImages() {
+    document.querySelectorAll(".pf-widget img").forEach(function (img) {
+      if (img.complete) return;
+      img.addEventListener("load", scheduleHeight, { once: true });
+      img.addEventListener("error", scheduleHeight, { once: true });
+    });
+  }
+
+  function observeContent() {
+    if (typeof ResizeObserver === "undefined") return;
+    if (!contentRO) contentRO = new ResizeObserver(scheduleHeight);
+    var widget = $(".pf-widget");
+    var root = $("#pf-root");
+    if (widget) contentRO.observe(widget);
+    if (root) contentRO.observe(root);
+    if (document.body) contentRO.observe(document.body);
   }
 
   function applyViewport(offsetTop, height, mode) {
@@ -113,6 +166,8 @@
         unlockPageGutter();
         clearViewport();
         postToParent({ type: MODAL_TYPE, open: false });
+        lastHeight = 0;
+        scheduleHeight();
       }, leaveMs);
       return;
     }
@@ -365,7 +420,9 @@
     } else {
       root.innerHTML = widgetHtml + renderPopup(cfg);
     }
-    requestAnimationFrame(sendHeight);
+    watchImages();
+    observeContent();
+    scheduleHeight();
   }
 
   function applyConfig(cfg) {
@@ -435,7 +492,7 @@
       var data = event.data;
       if (!data || typeof data !== "object") return;
       if (data.type === PING_TYPE) {
-        sendHeight();
+        scheduleHeight();
         if (state.popupOpen) postToParent({ type: MODAL_TYPE, open: true });
       }
       if (data.type === CLOSE_TYPE) setPopupOpen(false);
@@ -449,17 +506,38 @@
       if (inIframe || !state.popupOpen || !window.visualViewport) return;
       applyViewport(window.visualViewport.offsetTop, window.visualViewport.height);
     }
+    window.addEventListener("load", scheduleHeight);
     window.addEventListener("resize", function () {
       syncStandaloneViewport();
-      sendHeight();
+      scheduleHeight();
     });
+    window.addEventListener("orientationchange", scheduleHeight);
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", syncStandaloneViewport);
+      window.visualViewport.addEventListener("resize", function () {
+        syncStandaloneViewport();
+        scheduleHeight();
+      });
       window.visualViewport.addEventListener("scroll", syncStandaloneViewport);
     }
-    if (window.ResizeObserver) {
-      var ro = new ResizeObserver(sendHeight);
-      if (document.body) ro.observe(document.body);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(scheduleHeight).catch(function () {});
+    }
+    observeContent();
+    if (typeof MutationObserver !== "undefined" && document.documentElement) {
+      var heightTimer = 0;
+      new MutationObserver(function (mutations) {
+        var onlyAttrs = mutations.every(function (m) {
+          return m.type === "attributes" || m.type === "characterData";
+        });
+        if (onlyAttrs) return;
+        if (heightTimer) clearTimeout(heightTimer);
+        heightTimer = setTimeout(scheduleHeight, 220);
+      }).observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class", "style"]
+      });
     }
   }
 
@@ -500,11 +578,16 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    if (inIframe) document.body.classList.add("pf-embedded");
+    if (inIframe) {
+      document.documentElement.classList.add("pf-embedded");
+      document.body.classList.add("pf-embedded");
+    }
     bind();
     loadConfig();
-    setTimeout(sendHeight, 300);
-    setTimeout(sendHeight, 1000);
+    scheduleHeight();
+    [120, 500, 1200, 2400].forEach(function (ms) {
+      setTimeout(scheduleHeight, ms);
+    });
   });
 
   window.PFWidget = {

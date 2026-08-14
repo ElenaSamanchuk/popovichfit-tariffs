@@ -294,7 +294,11 @@
   }
 
   iframe.addEventListener('load', function () {
-    try { iframe.contentWindow.postMessage({ type: PING_TYPE }, '*'); } catch (e) {}
+    function ping() {
+      try { iframe.contentWindow.postMessage({ type: PING_TYPE }, '*'); } catch (e) {}
+    }
+    ping();
+    [120, 500, 1200, 2400].forEach(function (ms) { setTimeout(ping, ms); });
   });
 })();
 </script>

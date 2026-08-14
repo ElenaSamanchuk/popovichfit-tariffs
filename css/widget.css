@@ -95,9 +95,16 @@ html, body {
   background: #fff;
   color: var(--pf-black);
   font-family: var(--pf-font);
-  overflow-x: clip;
+  overflow-x: hidden;
 }
+body { min-height: 0; }
 body.pf-embedded { background: transparent; }
+/* В iframe документ не скроллится: высоту задаёт родитель по postMessage */
+html.pf-embedded,
+html.pf-embedded body {
+  overflow: hidden;
+  height: auto;
+}
 button, a { font-family: inherit; }
 img { max-width: 100%; display: block; }
 
@@ -107,7 +114,6 @@ img { max-width: 100%; display: block; }
   margin: 0 auto;
   padding: 24px 0 40px;
   min-width: 0;
-  overflow-x: clip;
 }
 
 /* Header */
