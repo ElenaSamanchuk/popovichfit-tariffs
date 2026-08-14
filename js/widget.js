@@ -346,15 +346,16 @@
         "</div>" +
         subs.map(function (o) { return renderOption(card, o, selectedId); }).join("") +
         '<div class="pf-price">' +
-          '<div>' +
-            '<div class="pf-price__name pf-price__name--desk">' + esc(card.priceLabel) + "</div>" +
-            '<div class="pf-price__name pf-price__name--mob">' + esc(card.priceLabelMobile || card.priceLabel) + "</div>" +
-            (card.discountUntil ? '<p class="pf-price__until">' + esc(card.discountUntil) + "</p>" : "") +
+          '<div class="pf-price__row">' +
+            '<span class="pf-price__name">' + esc(card.priceLabel) + "</span>" +
+            '<span class="pf-price__new">' + esc(opt.newPrice) + "</span>" +
           "</div>" +
-          '<div class="pf-price__col">' +
-            '<p class="pf-price__new">' + esc(opt.newPrice) + "</p>" +
-            (opt.oldPrice ? '<p class="pf-price__old">' + esc(opt.oldPrice) + "</p>" : '<p class="pf-price__old"></p>') +
-          "</div>" +
+          (card.discountUntil || opt.oldPrice
+            ? '<div class="pf-price__row">' +
+                (card.discountUntil ? '<span class="pf-price__until">' + esc(card.discountUntil) + "</span>" : "<span></span>") +
+                (opt.oldPrice ? '<span class="pf-price__old">' + esc(opt.oldPrice) + "</span>" : "") +
+              "</div>"
+            : "") +
         "</div>" +
         '<button type="button" class="pf-btn pf-btn--block pf-card__buy" data-action="buy" data-card="' +
           esc(card.id) + '">' + esc(buyLabel) + "</button>" +
