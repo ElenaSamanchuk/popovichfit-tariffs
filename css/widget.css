@@ -681,7 +681,7 @@ img { max-width: 100%; display: block; }
   min-height: 24px;
   min-width: 0;
 }
-.pf-plan__row span:first-child {
+.pf-plan__row > span:first-child {
   font-weight: 500;
   font-size: 12px;
   color: var(--pf-muted);
@@ -694,16 +694,19 @@ img { max-width: 100%; display: block; }
   text-decoration: line-through;
 }
 .pf-plan__hr { height: 1px; background: #ededed; border: 0; margin: 8px 0; }
-.pf-plan__row--sub span:first-child { color: var(--pf-pink); }
+.pf-plan__row--sub > span:first-child { color: var(--pf-pink); }
 .pf-plan__subwrap { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .pf-plan__disc {
   background: var(--pf-pink);
   color: #fff;
   padding: 2px 8px;
   border-radius: 1px;
+  font-family: var(--pf-font);
   font-weight: 800;
   font-size: 12px;
+  line-height: 1.35;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .pf-plan__sub {
   font-family: var(--pf-font-display);
@@ -745,7 +748,10 @@ html.pf-modal-open body {
   overflow: hidden !important;
   overscroll-behavior: none !important;
 }
-html.pf-modal-open body { touch-action: none; }
+html.pf-modal-open body {
+  touch-action: none;
+  padding-right: var(--pf-sbw, 0px);
+}
 html.pf-modal-open .pf-overlay {
   overscroll-behavior: contain;
   touch-action: pan-y;
@@ -833,20 +839,20 @@ html.pf-modal-open.pf-iframe-fixed .pf-overlay {
   .pf-opt--sub { margin-bottom: 16px; }
 }
 
-/* Mobile: Figma 320w light, fluid up to tablet */
+/* Mobile: Figma 320w light (2356:1710), fluid up to tablet */
 @media (max-width: 760px) {
   .pf-widget { padding: 16px 10px 32px; }
   .pf-header { margin-bottom: 20px; }
   .pf-header__row { flex-direction: column-reverse; gap: 12px; }
   .pf-header__title { font-size: 18px; line-height: 1.2; }
-  .pf-header__pills { width: 100%; justify-content: flex-start; }
-  .pf-pill { font-size: 8px; padding: 5px 10px; }
-  .pf-header__sub { font-size: 12px; line-height: 1.2; color: #606060; }
+  .pf-header__pills { width: 100%; justify-content: flex-start; gap: 5px; }
+  .pf-pill { font-size: 8px; line-height: 1.2; padding: 5px 9px; white-space: nowrap; }
+  .pf-header__sub { font-size: 12px; line-height: 1.2; color: #606060; overflow-wrap: anywhere; }
   .pf-plashka-wrap { margin-bottom: 20px; }
   .pf-plashka-head { gap: 8px; margin-bottom: 15px; }
-  .pf-plashka-head__title { font-size: 12px; }
-  .pf-badge-new { font-size: 8px; }
-  .pf-plashka { border-radius: 8px; }
+  .pf-plashka-head__title { font-size: 12px; line-height: 1.2; }
+  .pf-badge-new { font-size: 8px; padding: 2px 8px; line-height: 1.35; }
+  .pf-plashka { border-radius: 8px; overflow: hidden; min-height: 0; }
   .pf-plashka__top {
     display: block;
     padding: 15px 15px 12px;
@@ -856,16 +862,24 @@ html.pf-modal-open.pf-iframe-fixed .pf-overlay {
     width: 87px;
     height: 87px;
     position: absolute;
-    top: 8px;
-    right: 10px;
+    top: 0;
+    right: 0;
+    border-radius: 0;
   }
   .pf-plashka__copy {
-    max-width: 185px;
+    max-width: none;
+    width: 100%;
     padding-right: 0;
     margin-bottom: 16px;
   }
-  .pf-plashka__title { font-size: 14px; }
-  .pf-plashka__text { font-size: 12px; max-width: none; }
+  .pf-plashka__title {
+    font-size: 14px;
+    line-height: 1.2;
+    max-width: calc(100% - 92px);
+    overflow-wrap: anywhere;
+  }
+  .pf-plashka__text { font-size: 12px; line-height: 1.2; max-width: none; overflow-wrap: anywhere; }
+  .pf-plashka__line { display: none; }
   .pf-plashka__price {
     width: 100%;
     max-width: none;
@@ -874,42 +888,50 @@ html.pf-modal-open.pf-iframe-fixed .pf-overlay {
     align-items: center;
     text-align: left;
     min-width: 0;
+    margin: 0;
+    padding-top: 16px;
+    border-top: 1px solid #d7e6f6;
   }
-  .pf-plashka__from { font-size: 14px; margin: 0; }
-  .pf-plashka__instead { font-size: 10px; }
+  .pf-plashka__from { font-size: 14px; line-height: 1.1; margin: 0; }
+  .pf-plashka__instead { font-size: 10px; line-height: 1.2; }
   .pf-plashka__bottom { padding: 12px 15px 16px; }
   .pf-plashka__bottom .pf-lime,
   .pf-plashka__bottom .pf-check { display: none; }
   .pf-plashka__cta { width: 100%; margin: 0; }
   .pf-plashka__cta .pf-btn { width: 100%; height: 35px; font-size: 10px; padding: 0 16px; border-radius: 6px; }
-  .pf-renewal { font-size: 12px; margin-bottom: 16px; }
-  .pf-card { padding: 16px 15px 12px; border-radius: 8px; }
-  .pf-card__title { font-size: 14px; margin-bottom: 12px; padding-right: 56px; }
-  .pf-card__badge { top: 10px; right: 10px; font-size: 8px; }
-  .pf-card__desc { font-size: 9px; line-height: 1.22; margin-bottom: 12px; }
+  .pf-renewal { font-size: 12px; line-height: 1.2; margin-bottom: 16px; }
+  .pf-card { padding: 15px 15px 12px; border-radius: 8px; }
+  .pf-card__title { font-size: 14px; line-height: 1.2; margin-bottom: 14px; padding-right: 56px; }
+  .pf-card__badge { top: 10px; right: 12px; font-size: 8px; line-height: 10px; padding: 2px 6px; }
+  .pf-card__tags { margin-bottom: 8px; gap: 6px; }
+  .pf-card__desc { font-size: 9px; line-height: 11px; margin-bottom: 12px; max-width: none; }
   .pf-card__rule { margin-bottom: 14px; }
-  .pf-tag, .pf-lime { font-size: 8px; }
-  .pf-options { margin-bottom: 8px; }
-  .pf-opt { min-height: 51px; padding: 6px; gap: 10px; }
-  .pf-opt__select { font-size: 10px; gap: 6px; }
-  .pf-opt__label { font-size: 8px; }
+  .pf-tag {
+    font-size: 8px;
+    line-height: 1.2;
+    height: 16px;
+    padding: 0 8px;
+  }
+  .pf-options { margin-bottom: 8px; gap: 5px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pf-opt { min-height: 51px; height: 51px; padding: 6px; gap: 10px; border-radius: 6px; min-width: 0; overflow: hidden; }
+  .pf-opt__select { font-size: 10px; line-height: 12px; gap: 5px; min-width: 0; overflow: hidden; }
+  .pf-opt__label { font-size: 8px; line-height: 10px; }
   .pf-radio { width: 14px; height: 14px; }
-  .pf-opt--sub { min-height: 56px; margin-bottom: 12px; }
+  .pf-opt--sub { min-height: 56px; height: auto; margin-bottom: 12px; }
   .pf-opt__best { font-size: 8px; }
-  .pf-price__name { font-size: 10px; }
+  .pf-price { margin-bottom: 8px; }
+  .pf-price__name { font-size: 10px; line-height: 11px; }
   .pf-price__name--desk { display: none; }
   .pf-price__name--mob { display: inline; }
-  .pf-price__new { font-size: 12px; }
-  .pf-price__old { font-size: 10px; margin-top: 6px; }
-  .pf-price__until { font-size: 8px; margin-top: 6px; }
-  .pf-card__buy .pf-btn { height: 35px; font-size: 10px; border-radius: 6px; }
+  .pf-price__new { font-size: 12px; line-height: 13px; }
+  .pf-price__old { font-size: 10px; line-height: 11px; margin-top: 6px; }
+  .pf-price__until { font-size: 8px; line-height: 10px; margin-top: 6px; }
+  .pf-card__buy { margin-top: auto; height: 35px; font-size: 10px; border-radius: 6px; padding: 0 16px; }
   .pf-modal { padding: 20px 16px; gap: 20px; border-radius: 12px; }
   .pf-modal__title { font-size: 18px; }
   .pf-plan__name, .pf-plan__sub { font-size: 18px; }
 }
 
 @media (max-width: 380px) {
-  .pf-pill { white-space: normal; text-align: center; line-height: 1.2; }
   .pf-opt__select { gap: 4px; }
-  .pf-plashka__copy { max-width: calc(100% - 96px); }
 }

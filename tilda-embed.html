@@ -46,7 +46,11 @@
     iframeWidth: '',
     iframeHeight: '',
     htmlOverscroll: '',
-    bodyOverscroll: ''
+    bodyOverscroll: '',
+    htmlOverflow: '',
+    bodyOverflow: '',
+    htmlPaddingRight: '',
+    bodyPaddingRight: ''
   };
   var DIM_Z = '2147483000';
   var FRAME_Z = '2147483001';
@@ -86,7 +90,7 @@
   function onKeepScrollPosition() {
     if (!modalOpen) return;
     if (Math.abs((window.scrollY || 0) - lockedScrollY) > 0) {
-      window.scrollTo(lockedScrollY, 0);
+      window.scrollTo(0, lockedScrollY);
     }
   }
 
@@ -104,11 +108,23 @@
     else window.removeEventListener('scroll', onKeepScrollPosition, { passive: true });
   }
 
+  function scrollbarWidth() {
+    return Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+  }
+
   function lockScroll() {
     if (html.dataset.pfScrollLock === '1') return;
     lockedScrollY = window.scrollY || window.pageYOffset || 0;
+    var sbw = scrollbarWidth();
     prev.htmlOverscroll = html.style.overscrollBehavior;
     prev.bodyOverscroll = body.style.overscrollBehavior;
+    prev.htmlOverflow = html.style.overflow;
+    prev.bodyOverflow = body.style.overflow;
+    prev.htmlPaddingRight = html.style.paddingRight;
+    prev.bodyPaddingRight = body.style.paddingRight;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    if (sbw > 0) body.style.paddingRight = sbw + 'px';
     html.style.overscrollBehavior = 'none';
     body.style.overscrollBehavior = 'none';
     html.dataset.pfScrollLock = '1';
@@ -122,8 +138,13 @@
     }
     html.style.overscrollBehavior = prev.htmlOverscroll;
     body.style.overscrollBehavior = prev.bodyOverscroll;
+    html.style.overflow = prev.htmlOverflow;
+    body.style.overflow = prev.bodyOverflow;
+    html.style.paddingRight = prev.htmlPaddingRight;
+    body.style.paddingRight = prev.bodyPaddingRight;
     delete html.dataset.pfScrollLock;
     bindScrollBlock(false);
+    window.scrollTo(0, lockedScrollY);
   }
 
   function showSiteDim() {
@@ -235,9 +256,9 @@
     }
     modalOpen = open;
     if (modalOpen) {
+      lockScroll();
       elevateLayer(true);
       sendViewport();
-      lockScroll();
       hideTildaChrome();
       showSiteDim();
       requestAnimationFrame(sendViewport);

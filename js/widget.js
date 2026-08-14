@@ -77,6 +77,18 @@
     root.style.removeProperty("--pf-vis-height");
   }
 
+  function measureScrollbar() {
+    return Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+  }
+
+  function lockPageGutter() {
+    document.documentElement.style.setProperty("--pf-sbw", measureScrollbar() + "px");
+  }
+
+  function unlockPageGutter() {
+    document.documentElement.style.removeProperty("--pf-sbw");
+  }
+
   function setPopupOpen(open) {
     open = !!open;
     var overlay = $("#pf-overlay");
@@ -98,6 +110,7 @@
         overlay.setAttribute("aria-hidden", "true");
         document.documentElement.classList.remove("pf-modal-open");
         document.body.classList.remove("pf-lock");
+        unlockPageGutter();
         clearViewport();
         postToParent({ type: MODAL_TYPE, open: false });
       }, leaveMs);
@@ -107,6 +120,7 @@
     overlay.classList.remove("is-leaving");
     overlay.classList.add("is-open");
     overlay.setAttribute("aria-hidden", "false");
+    lockPageGutter();
     document.documentElement.classList.add("pf-modal-open");
     document.body.classList.add("pf-lock");
     if (inIframe) document.documentElement.classList.add("pf-await-viewport");
@@ -379,10 +393,7 @@
       var cardId = btn.getAttribute("data-card");
       var optId = btn.getAttribute("data-option");
       state.selected[cardId] = optId;
-      var card = visibleCards(state.config).find(function (c) { return c.id === cardId; });
-      var opt = card && optionById(card, optId);
       paint();
-      if (opt && opt.action === "popup") setPopupOpen(true);
       return;
     }
     if (action === "open-popup") {
