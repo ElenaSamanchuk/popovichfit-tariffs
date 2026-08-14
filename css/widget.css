@@ -215,9 +215,9 @@ img { max-width: 100%; display: block; }
 .pf-plashka__top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 13px 25px 13px 13px;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 1px 25px 1px 13px;
   min-height: 114px;
   min-width: 0;
 }
@@ -248,6 +248,7 @@ img { max-width: 100%; display: block; }
   flex-shrink: 0;
   width: 186px;
   min-width: 0;
+  margin-left: auto;
 }
 .pf-plashka__from {
   margin: 0 0 8px;
@@ -545,14 +546,17 @@ img { max-width: 100%; display: block; }
   z-index: 9999;
   display: flex;
   align-items: center;
+  align-items: safe center;
   justify-content: center;
-  padding: 16px;
+  padding: 24px 16px;
   background: rgba(0, 0, 0, 0.5);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   transition: opacity var(--pf-dur) var(--pf-ease), visibility var(--pf-dur) var(--pf-ease);
 }
 .pf-overlay.is-open {
@@ -569,11 +573,11 @@ img { max-width: 100%; display: block; }
   position: relative;
   width: 100%;
   max-width: 520px;
-  max-height: min(908px, calc(var(--pf-vis-height, 100dvh) - 32px));
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  flex: 0 0 auto;
+  margin: auto;
   background: #fff;
   border-radius: 16px;
   padding: 24px;
@@ -742,9 +746,13 @@ html.pf-modal-open body {
   overscroll-behavior: none !important;
 }
 html.pf-modal-open body { touch-action: none; }
-html.pf-modal-open .pf-overlay,
-html.pf-modal-open .pf-modal {
+html.pf-modal-open .pf-overlay {
   overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+html.pf-modal-open .pf-modal {
+  overflow: visible;
+  max-height: none;
   touch-action: pan-y;
 }
 
@@ -759,6 +767,8 @@ html.pf-modal-open:not(.pf-iframe-fixed) .pf-overlay {
   left: 0;
   height: var(--pf-vis-height, 100dvh);
   max-height: var(--pf-vis-height, 100dvh);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 html.pf-modal-open.pf-iframe-fixed .pf-overlay {
   top: 0;
@@ -767,6 +777,8 @@ html.pf-modal-open.pf-iframe-fixed .pf-overlay {
   left: 0;
   height: auto;
   max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

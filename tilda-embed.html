@@ -36,8 +36,15 @@
   var prev = {
     wrapPosition: '',
     wrapZ: '',
+    wrapHeight: '',
     iframePosition: '',
     iframeZ: '',
+    iframeTop: '',
+    iframeLeft: '',
+    iframeRight: '',
+    iframeBottom: '',
+    iframeWidth: '',
+    iframeHeight: '',
     htmlOverscroll: '',
     bodyOverscroll: ''
   };
@@ -51,55 +58,12 @@
     iframe.style.height = height + 'px';
   }
 
-  function viewMetrics() {
-    var vv = window.visualViewport;
-    var viewTop = vv ? vv.offsetTop : 0;
-    var viewHeight = vv ? vv.height : (window.innerHeight || html.clientHeight || 0);
-    return { viewTop: viewTop, viewHeight: viewHeight, viewBottom: viewTop + viewHeight };
-  }
-
-  function visibleSlice() {
-    var rect = iframe.getBoundingClientRect();
-    var m = viewMetrics();
-    var visibleTop = Math.max(rect.top, m.viewTop);
-    var visibleBottom = Math.min(rect.bottom, m.viewBottom);
-    var height = Math.max(0, visibleBottom - visibleTop);
-    var offsetTop = Math.max(0, visibleTop - rect.top);
-    if (height < 120) {
-      height = Math.min(m.viewHeight, iframe.offsetHeight || m.viewHeight);
-      offsetTop = Math.max(0, m.viewTop - rect.top);
-    }
-    return { offsetTop: Math.round(offsetTop), height: Math.round(height) };
-  }
-
-  function ensureModalRoom() {
-    var m = viewMetrics();
-    var minHeight = Math.round(m.viewHeight * 0.9);
-    var slice = visibleSlice();
-    if (slice.height >= minHeight) return;
-    var rect = iframe.getBoundingClientRect();
-    var y = window.scrollY || window.pageYOffset || 0;
-    var nextY = y;
-    if (rect.bottom < m.viewBottom - 2) {
-      nextY = y - (m.viewBottom - rect.bottom);
-    }
-    nextY = Math.max(0, nextY);
-    if (Math.abs(nextY - y) < 1) return;
-    var prevBehavior = html.style.scrollBehavior;
-    html.style.scrollBehavior = 'auto';
-    window.scrollTo(0, nextY);
-    html.style.scrollBehavior = prevBehavior;
-  }
-
   function sendViewport() {
     if (!modalOpen) return;
-    var slice = visibleSlice();
     try {
       iframe.contentWindow.postMessage({
         type: VIEWPORT_TYPE,
-        mode: 'slice',
-        offsetTop: slice.offsetTop,
-        height: Math.max(slice.height, 120)
+        mode: 'fixed'
       }, '*');
     } catch (e) {}
   }
@@ -223,21 +187,43 @@
       if (!layerSaved) {
         prev.wrapPosition = wrap.style.position;
         prev.wrapZ = wrap.style.zIndex;
+        prev.wrapHeight = wrap.style.height;
         prev.iframePosition = iframe.style.position;
         prev.iframeZ = iframe.style.zIndex;
+        prev.iframeTop = iframe.style.top;
+        prev.iframeLeft = iframe.style.left;
+        prev.iframeRight = iframe.style.right;
+        prev.iframeBottom = iframe.style.bottom;
+        prev.iframeWidth = iframe.style.width;
+        prev.iframeHeight = iframe.style.height;
         layerSaved = true;
       }
+      var spacer = lastContentHeight || iframe.offsetHeight || 600;
       wrap.style.position = 'relative';
       wrap.style.zIndex = FRAME_Z;
-      iframe.style.position = 'relative';
+      wrap.style.height = spacer + 'px';
+      iframe.style.position = 'fixed';
+      iframe.style.top = '0';
+      iframe.style.left = '0';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
       iframe.style.zIndex = FRAME_Z;
       return;
     }
     if (!layerSaved) return;
     wrap.style.position = prev.wrapPosition;
     wrap.style.zIndex = prev.wrapZ;
+    wrap.style.height = prev.wrapHeight;
     iframe.style.position = prev.iframePosition;
     iframe.style.zIndex = prev.iframeZ;
+    iframe.style.top = prev.iframeTop;
+    iframe.style.left = prev.iframeLeft;
+    iframe.style.right = prev.iframeRight;
+    iframe.style.bottom = prev.iframeBottom;
+    iframe.style.width = prev.iframeWidth || '100%';
+    iframe.style.height = lastContentHeight ? lastContentHeight + 'px' : prev.iframeHeight;
     layerSaved = false;
   }
 
@@ -249,7 +235,6 @@
     }
     modalOpen = open;
     if (modalOpen) {
-      ensureModalRoom();
       elevateLayer(true);
       sendViewport();
       lockScroll();
