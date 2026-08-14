@@ -46,11 +46,63 @@
     }
   }
 
+  /* Copied from Tilda Zero Block:
+     t396__setGlobalScaleVariables(rec, resolution, upscale==="window")
+       scaleFactor = parseFloat((t396_ab__getWindowWidth() / resolution).toFixed(3))
+       rec.style.setProperty("--zoom", scaleFactor)
+     t396_scaleBlock → elem.style.zoom = scaleFactor
+     t396_detectResolution: 320 when cssWidth < 480
+     t396__getTNWindowWidth: document.documentElement.clientWidth
+     Live popovichfit.ru/new-course: data-artboard-upscale-res-480="window"
+     (320 inherits "window" → autoscale on). Kochfit does not clone this. */
+  var DESIGN_W = 320;
+  var TILDA_320_MAX = 479;
+
+  function viewportWidth() {
+    return document.documentElement.clientWidth || window.innerWidth || DESIGN_W;
+  }
+
+  function tildaScale() {
+    var w = viewportWidth();
+    if (w > TILDA_320_MAX) return 1;
+    return parseFloat((w / DESIGN_W).toFixed(3));
+  }
+
+  function applyTildaScale() {
+    var scale = tildaScale();
+    var html = document.documentElement;
+    var wrap = $("#pf-root");
+    var widget = $(".pf-widget");
+    if (scale === 1) {
+      html.classList.remove("pf-tilda-scale");
+      html.style.removeProperty("--zoom");
+      if (widget) {
+        widget.style.removeProperty("width");
+        widget.style.removeProperty("max-width");
+        widget.style.removeProperty("zoom");
+      }
+      if (wrap) wrap.style.removeProperty("height");
+      return 1;
+    }
+    html.classList.add("pf-tilda-scale");
+    html.style.setProperty("--zoom", String(scale));
+    if (!widget) return scale;
+    widget.style.width = DESIGN_W + "px";
+    widget.style.maxWidth = DESIGN_W + "px";
+    widget.style.zoom = String(scale);
+    if (wrap) wrap.style.height = Math.ceil(widget.offsetHeight * scale) + "px";
+    return scale;
+  }
+
   function measure() {
+    var scale = applyTildaScale();
+    var widget = $(".pf-widget");
+    if (widget && scale !== 1) {
+      return Math.ceil(widget.offsetHeight * scale);
+    }
     var doc = document.documentElement;
     var body = document.body;
     if (!body) return 0;
-    var widget = $(".pf-widget");
     var root = $("#pf-root");
     var scrollY = window.scrollY || doc.scrollTop || 0;
     var values = [
@@ -422,6 +474,7 @@
     }
     watchImages();
     observeContent();
+    applyTildaScale();
     scheduleHeight();
   }
 

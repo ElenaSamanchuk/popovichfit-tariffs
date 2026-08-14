@@ -101,10 +101,14 @@ body { min-height: 0; }
 body.pf-embedded { background: transparent; }
 /* В iframe документ не скроллится: высоту задаёт родитель по postMessage */
 html.pf-embedded,
-html.pf-embedded body {
+html.pf-embedded body,
+html.pf-tilda-scale,
+html.pf-tilda-scale body {
   overflow: hidden;
   height: auto;
 }
+#pf-root { width: 100%; }
+html.pf-tilda-scale #pf-root { overflow: hidden; }
 button, a { font-family: inherit; }
 img { max-width: 100%; display: block; }
 
@@ -854,25 +858,31 @@ html.pf-modal-open.pf-iframe-fixed .pf-overlay {
   .pf-header__pills { width: 100%; justify-content: flex-start; gap: 5px; }
   .pf-pill { font-size: 8px; line-height: 1.2; padding: 5px 9px; white-space: nowrap; }
   .pf-header__sub { font-size: 12px; line-height: 1.2; color: #606060; overflow-wrap: anywhere; }
-  .pf-plashka-wrap { margin-bottom: 20px; }
+  .pf-plashka-wrap { margin-bottom: 20px; overflow: visible; }
   .pf-plashka-head { gap: 8px; margin-bottom: 15px; }
   .pf-plashka-head__title { font-size: 12px; line-height: 1.2; }
   .pf-badge-new { font-size: 8px; padding: 2px 8px; line-height: 1.35; }
-  .pf-plashka { border-radius: 8px; overflow: hidden; min-height: 0; }
+  .pf-plashka { border-radius: 8px; overflow: visible; min-height: 0; }
   .pf-plashka__top {
     display: block;
     padding: 15px 15px 12px;
     min-height: 0;
+    overflow: visible;
   }
   .pf-plashka__img {
     width: 87px;
     height: 87px;
+    max-width: none;
     position: absolute;
-    top: 0;
-    right: 0;
+    top: -28px;
+    right: -3px;
     border-radius: 0;
+    z-index: 0;
+    pointer-events: none;
   }
   .pf-plashka__copy {
+    position: relative;
+    z-index: 1;
     max-width: none;
     width: 100%;
     padding-right: 0;
@@ -881,7 +891,7 @@ html.pf-modal-open.pf-iframe-fixed .pf-overlay {
   .pf-plashka__title {
     font-size: 14px;
     line-height: 1.2;
-    max-width: calc(100% - 92px);
+    max-width: 185px; /* Figma 2356:1981 */
     overflow-wrap: anywhere;
   }
   .pf-plashka__text { font-size: 12px; line-height: 1.2; max-width: none; overflow-wrap: anywhere; }
