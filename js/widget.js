@@ -463,10 +463,19 @@
     }
   }
 
+  function configFile() {
+    return document.documentElement.dataset.config || "config.json";
+  }
+
+  function draftKey() {
+    var course = document.documentElement.dataset.course;
+    return course ? "PF_ADMIN_DRAFT_" + course : "PF_ADMIN_DRAFT";
+  }
+
   function draftFromStorage() {
     try {
       if (!/preview=1/.test(location.search)) return null;
-      var raw = localStorage.getItem("PF_ADMIN_DRAFT");
+      var raw = localStorage.getItem(draftKey());
       return raw ? JSON.parse(raw) : null;
     } catch (e) {
       return null;
@@ -479,13 +488,14 @@
       applyConfig(draft);
       return;
     }
-    var url = "config.json?t=" + Date.now();
+    var file = configFile();
+    var url = file + (file.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
     fetch(url, { cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(applyConfig)
       .catch(function (err) {
-        console.error("[PF] config.json", err);
-        $("#pf-root").innerHTML = "<p style='padding:24px;font-family:sans-serif'>Не удалось загрузить config.json</p>";
+        console.error("[PF] " + file, err);
+        $("#pf-root").innerHTML = "<p style='padding:24px;font-family:sans-serif'>Не удалось загрузить " + file + "</p>";
       });
   }
 

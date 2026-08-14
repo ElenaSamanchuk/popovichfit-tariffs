@@ -1,12 +1,12 @@
 {
   "meta": {
-    "courseId": "silovye",
+    "courseId": "korrekciya",
     "supportUrl": "https://t.me/popovichfit",
     "supportText": "напишите в техническую поддержку, поможем разобраться."
   },
   "header": {
-    "title": "Курс силовой",
-    "subtitle": "Укрепление тела, рельеф и сила. Для тех, кто хочет поработать не только над осанкой, но и над формами",
+    "title": "Курс коррекция",
+    "subtitle": "Освобождение от зажимов, работа с осанкой, дыханием, тазовым дном. Идеально для восстановления и заботы о себе",
     "startLabel": "старт нового потока — 31 августа",
     "durationLabel": "длительность — 5 недель"
   },
@@ -29,10 +29,10 @@
   "renewalTitle": "Или продолжить по продлению:",
   "cards": [
     {
-      "id": "silovoj",
+      "id": "korekciya",
       "visible": true,
-      "title": "Силовой",
-      "discountBadge": "ДО — 20%",
+      "title": "Коррекция",
+      "discountBadge": "ДО — 23%",
       "spotsLabel": "Количество мест НЕ ограничено",
       "spotsLimited": false,
       "extraBadge": "самостоятельное прохождение",
@@ -47,27 +47,27 @@
           "id": "1",
           "label": "1 поток",
           "selectLabel": "выбрать",
-          "newPrice": "4 299 р.",
-          "oldPrice": "6 399 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_B9DEYo/checkout",
+          "newPrice": "3 799 р.",
+          "oldPrice": "",
+          "link": "https://lk.popovichfit.ru/payments/tariff_D9nEQP/checkout",
           "action": "pay"
         },
         {
           "id": "3",
           "label": "3 потока",
           "selectLabel": "выбрать",
-          "newPrice": "12 399 р.",
-          "oldPrice": "16 599 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_3o8NwP/checkout",
+          "newPrice": "9 599 р.",
+          "oldPrice": "12 899 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_6KWjno/checkout",
           "action": "pay"
         },
         {
           "id": "6",
           "label": "6 потоков",
           "selectLabel": "выбрать",
-          "newPrice": "22 399 р.",
-          "oldPrice": "29 099 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_v9vQDP/checkout",
+          "newPrice": "17 799 р.",
+          "oldPrice": "24 399 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_qoAM5o/checkout",
           "action": "pay"
         },
         {
@@ -83,10 +83,10 @@
       ]
     },
     {
-      "id": "silovoj-trener",
+      "id": "korekciya-trener",
       "visible": true,
-      "title": "Силовой с тренером",
-      "discountBadge": "ДО — 20%",
+      "title": "Коррекция с тренером",
+      "discountBadge": "ДО — 23%",
       "spotsLabel": "Количество мест ограничено",
       "spotsLimited": true,
       "extraBadge": "Разбор упражнений",
@@ -101,27 +101,27 @@
           "id": "1",
           "label": "1 поток",
           "selectLabel": "выбрать",
-          "newPrice": "6 699 р.",
-          "oldPrice": "8 799 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_1K7zmo/checkout",
+          "newPrice": "5 599 р.",
+          "oldPrice": "7 699 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_Jo4XGo/checkout",
           "action": "pay"
         },
         {
           "id": "3",
           "label": "3 потока",
           "selectLabel": "выбрать",
-          "newPrice": "18 399 р.",
-          "oldPrice": "23 199 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_dPkm0o/checkout",
+          "newPrice": "14 899 р.",
+          "oldPrice": "19 299 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_2Kd1wP/checkout",
           "action": "pay"
         },
         {
           "id": "6",
           "label": "6 потоков",
           "selectLabel": "выбрать",
-          "newPrice": "31 899 р.",
-          "oldPrice": "40 899 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_X9GEVK/checkout",
+          "newPrice": "25 799 р.",
+          "oldPrice": "34 799 р.",
+          "link": "https://lk.popovichfit.ru/payments/tariff_wo2xkP/checkout",
           "action": "pay"
         },
         {
@@ -163,16 +163,16 @@
     "defaultPlan": 1,
     "plans": [
       {
-        "id": "silovoj",
-        "title": "Силовой",
+        "id": "korekciya",
+        "title": "Коррекция",
         "oneTimePrice": "3 499 р.",
         "subPrice": "2 499 р.",
         "discountBadge": "- 10%",
         "link": ""
       },
       {
-        "id": "silovoj-trener",
-        "title": "Силовой с тренером",
+        "id": "korekciya-trener",
+        "title": "Коррекция с тренером",
         "oneTimePrice": "4 999 р.",
         "subPrice": "3 499 р.",
         "discountBadge": "- 10%",

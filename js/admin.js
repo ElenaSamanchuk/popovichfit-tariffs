@@ -1,14 +1,39 @@
 (function () {
   var TOKEN_KEY = "PF_GH_TOKEN";
-  var DRAFT_KEY = "PF_ADMIN_DRAFT";
   var REPO_DEFAULT = "ElenaSamanchuk/popovichfit-tariffs";
-  var PATH = "config.json";
   var BRANCH = "main";
+  var COURSES = {
+    korrekciya: {
+      id: "korrekciya",
+      title: "Коррекция",
+      config: "config-korrekciya.json",
+      page: "korrekciya.html",
+      draft: "PF_ADMIN_DRAFT_korrekciya",
+      alsoSave: []
+    },
+    silovye: {
+      id: "silovye",
+      title: "Силовые",
+      config: "config-silovye.json",
+      page: "silovye.html",
+      draft: "PF_ADMIN_DRAFT_silovye",
+      alsoSave: ["config.json"]
+    }
+  };
 
+  var course = resolveCourse();
   var config = null;
   var preview = document.getElementById("preview");
   var statusEl = document.getElementById("status");
   var formRoot = document.getElementById("form-root");
+
+  function resolveCourse() {
+    var params = new URLSearchParams(location.search);
+    var id = document.documentElement.dataset.course || params.get("course") || "korrekciya";
+    if (id === "silovoj") id = "silovye";
+    if (!COURSES[id]) id = "korrekciya";
+    return COURSES[id];
+  }
 
   function setStatus(text, kind) {
     statusEl.textContent = text || "";
@@ -27,8 +52,12 @@
     return JSON.parse(JSON.stringify(obj));
   }
 
+  function previewUrl() {
+    return course.page + "?preview=1&t=" + Date.now();
+  }
+
   function persistDraft() {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(config));
+    localStorage.setItem(course.draft, JSON.stringify(config));
     if (preview && preview.contentWindow) {
       preview.contentWindow.postMessage({ type: "pf-config", config: config }, "*");
     }
@@ -69,20 +98,6 @@
     return el;
   }
 
-  function listEditor(parent, arr, placeholder, renderItem) {
-    arr.forEach(function (item, i) { parent.appendChild(renderItem(item, i, arr)); });
-    var add = document.createElement("button");
-    add.type = "button";
-    add.className = "btn btn--ghost";
-    add.textContent = "Добавить";
-    add.addEventListener("click", function () {
-      arr.push(typeof placeholder === "function" ? placeholder() : placeholder);
-      persistDraft();
-      renderForm();
-    });
-    parent.appendChild(add);
-  }
-
   function renderForm() {
     formRoot.innerHTML = "";
     var h = section("Шапка курса");
@@ -113,7 +128,7 @@
 
     formRoot.appendChild(field("Заголовок над карточками", config.renewalTitle, function (v) { config.renewalTitle = v; }));
 
-    config.cards.forEach(function (card, ci) {
+    config.cards.forEach(function (card) {
       var box = section("Карточка: " + (card.title || card.id));
       box.appendChild(checkbox("Показывать карточку", card.visible !== false, function (v) { card.visible = v; }));
       box.appendChild(field("ID", card.id, function (v) { card.id = v; }));
@@ -124,6 +139,7 @@
       box.appendChild(field("Доп. бейдж", card.extraBadge, function (v) { card.extraBadge = v; }));
       box.appendChild(field("Описание", card.description, function (v) { card.description = v; }, { multiline: true }));
       box.appendChild(field("Подпись цены", card.priceLabel, function (v) { card.priceLabel = v; }));
+      box.appendChild(field("Подпись цены на мобиле", card.priceLabelMobile || "", function (v) { card.priceLabelMobile = v; }));
       box.appendChild(field("Скидка до", card.discountUntil, function (v) { card.discountUntil = v; }));
       box.appendChild(field("Кнопка покупки", card.buyLabel, function (v) { card.buyLabel = v; }));
       (card.options || []).forEach(function (opt, oi) {
@@ -191,7 +207,7 @@
         config = JSON.parse(ta.value);
         persistDraft();
         renderForm();
-        setStatus("JSON применён", "ok");
+        setStatus("JSON применён в превью. Чтобы опубликовать на Тильду, нажмите «Сохранить в GitHub».", "ok");
       } catch (e) {
         setStatus("Ошибка JSON: " + e.message, "err");
       }
@@ -231,30 +247,44 @@
     return res.json();
   }
 
+  async function putFile(repo, path, content, message) {
+    var sha = await githubGetSha(repo, path);
+    return githubPut(repo, path, content, message, sha);
+  }
+
   async function saveConfig() {
     var t = token();
     if (!t) {
-      setStatus("Вставьте GitHub PAT с правом repo", "err");
+      setStatus("Вставьте GitHub PAT с правом repo — без него изменения останутся только в превью.", "err");
       return;
     }
     localStorage.setItem(TOKEN_KEY, t);
-    setStatus("Сохраняю config.json…");
+    var json = JSON.stringify(config, null, 2) + "\n";
+    var repo = repoName();
+    var paths = [course.config].concat(course.alsoSave || []);
+    setStatus("Пишу в GitHub (" + BRANCH + "): " + paths.join(", ") + "…");
     try {
-      var repo = repoName();
-      var sha = await githubGetSha(repo, PATH);
-      await githubPut(repo, PATH, JSON.stringify(config, null, 2) + "\n", "chore: update tariffs config", sha);
-      setStatus("Сохранено. Страница тарифов обновится через несколько секунд.", "ok");
+      await putFile(repo, course.config, json, "chore: update " + course.config);
+      for (var i = 0; i < (course.alsoSave || []).length; i++) {
+        var extra = course.alsoSave[i];
+        await putFile(repo, extra, json, "chore: sync " + extra + " with " + course.config);
+      }
       persistDraft();
-      if (preview) preview.src = "index.html?preview=1&t=" + Date.now();
+      if (preview) preview.src = previewUrl();
+      setStatus(
+        "Сохранено в репозиторий: " + paths.join(", ") +
+          ". Это не локальный черновик — GitHub Pages пересоберёт публичную страницу, iframe на Тильде подтянет новый конфиг.",
+        "ok"
+      );
     } catch (e) {
-      setStatus(e.message, "err");
+      setStatus("Не удалось сохранить в GitHub: " + e.message, "err");
     }
   }
 
   async function uploadImage(file) {
     var t = token();
     if (!t) {
-      setStatus("Для загрузки картинки нужен PAT", "err");
+      setStatus("Для загрузки картинки нужен PAT — файл должен попасть в GitHub, не только в браузер.", "err");
       return;
     }
     var name = "assets/" + Date.now() + "-" + file.name.replace(/[^\w.\-]+/g, "_");
@@ -263,7 +293,7 @@
     var bin = "";
     for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
     var b64 = btoa(bin);
-    setStatus("Загружаю " + name + "…");
+    setStatus("Загружаю " + name + " в GitHub…");
     try {
       var repo = repoName();
       var res = await fetch("https://api.github.com/repos/" + repo + "/contents/" + name, {
@@ -283,7 +313,7 @@
       config.plashka.image = name;
       persistDraft();
       renderForm();
-      setStatus("Картинка загружена: " + name, "ok");
+      setStatus("Картинка записана в GitHub: " + name + ". Нажмите «Сохранить в GitHub», чтобы обновить путь в " + course.config + ".", "ok");
     } catch (e) {
       setStatus("Ошибка загрузки: " + e.message, "err");
     }
@@ -295,10 +325,11 @@
     renderForm();
     document.getElementById("token").value = localStorage.getItem(TOKEN_KEY) || "";
     document.getElementById("repo").value = REPO_DEFAULT;
+    if (preview && !preview.getAttribute("src")) preview.src = previewUrl();
     document.getElementById("save").addEventListener("click", saveConfig);
     document.getElementById("reload-preview").addEventListener("click", function () {
       persistDraft();
-      preview.src = "index.html?preview=1&t=" + Date.now();
+      preview.src = previewUrl();
     });
     document.getElementById("image-file").addEventListener("change", function (e) {
       if (e.target.files[0]) uploadImage(e.target.files[0]);
@@ -306,12 +337,16 @@
     preview.addEventListener("load", function () {
       persistDraft();
     });
+    setStatus("Загружен опубликованный " + course.config + ". Превью справа — черновик. Живая страница меняется только после «Сохранить в GitHub».");
   }
 
-  fetch("config.json?t=" + Date.now(), { cache: "no-store" })
-    .then(function (r) { return r.json(); })
+  fetch(course.config + "?t=" + Date.now(), { cache: "no-store" })
+    .then(function (r) {
+      if (!r.ok) throw new Error(r.status + " " + r.statusText);
+      return r.json();
+    })
     .then(boot)
     .catch(function (e) {
-      setStatus("Не удалось загрузить config.json: " + e.message, "err");
+      setStatus("Не удалось загрузить " + course.config + ": " + e.message, "err");
     });
 })();

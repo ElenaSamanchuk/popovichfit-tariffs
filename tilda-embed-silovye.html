@@ -1,0 +1,300 @@
+<!--
+  Тильда, блок HTML-код (T123): курс «силовые».
+  Можно вставлять рядом с другим курсом — id уникальные.
+-->
+<div id="popovich-tariffs-silovye-wrap" style="width:100%;line-height:0;">
+  <iframe
+    id="popovich-tariffs-silovye-frame"
+    src="https://elenasamanchuk.github.io/popovichfit-tariffs/silovye.html"
+    title="Тарифы PopovichFit — силовые"
+    loading="lazy"
+    style="width:100%;border:0;display:block;min-height:600px;overflow:hidden;"
+  ></iframe>
+</div>
+<script>
+(function () {
+  var RESIZE_TYPE = 'popovich-tariffs-resize';
+  var MODAL_TYPE = 'popovich-tariffs-modal';
+  var VIEWPORT_TYPE = 'popovich-tariffs-viewport';
+  var PING_TYPE = 'popovich-tariffs-ping';
+  var CLOSE_TYPE = 'popovich-tariffs-modal-close';
+  var CLOSING_TYPE = 'popovich-tariffs-modal-closing';
+
+  var wrap = document.getElementById('popovich-tariffs-silovye-wrap');
+  var iframe = document.getElementById('popovich-tariffs-silovye-frame');
+  if (!iframe || !wrap) return;
+
+  var modalOpen = false;
+  var lockedScrollY = 0;
+  var lastContentHeight = 0;
+  var siteDim = null;
+  var layerSaved = false;
+  var scrollBlocked = false;
+  var chromeHidden = [];
+  var html = document.documentElement;
+  var body = document.body;
+  var prev = {
+    wrapPosition: '',
+    wrapZ: '',
+    wrapHeight: '',
+    iframePosition: '',
+    iframeZ: '',
+    iframeTop: '',
+    iframeLeft: '',
+    iframeRight: '',
+    iframeBottom: '',
+    iframeWidth: '',
+    iframeHeight: '',
+    htmlOverscroll: '',
+    bodyOverscroll: '',
+    htmlOverflow: '',
+    bodyOverflow: '',
+    htmlPaddingRight: '',
+    bodyPaddingRight: ''
+  };
+  var DIM_Z = '2147483000';
+  var FRAME_Z = '2147483001';
+
+  function applyHeight(height) {
+    if (!height || height < 100) return;
+    lastContentHeight = height;
+    if (modalOpen) return;
+    iframe.style.height = height + 'px';
+  }
+
+  function sendViewport() {
+    if (!modalOpen) return;
+    try {
+      iframe.contentWindow.postMessage({
+        type: VIEWPORT_TYPE,
+        mode: 'fixed'
+      }, '*');
+    } catch (e) {}
+  }
+
+  function requestClose() {
+    try { iframe.contentWindow.postMessage({ type: CLOSE_TYPE }, '*'); } catch (e) {}
+  }
+
+  function onBlockScroll(event) {
+    if (!modalOpen) return;
+    event.preventDefault();
+  }
+
+  function onBlockKeys(event) {
+    if (!modalOpen) return;
+    var keys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar'];
+    if (keys.indexOf(event.key) !== -1) event.preventDefault();
+  }
+
+  function onKeepScrollPosition() {
+    if (!modalOpen) return;
+    if (Math.abs((window.scrollY || 0) - lockedScrollY) > 0) {
+      window.scrollTo(0, lockedScrollY);
+    }
+  }
+
+  function bindScrollBlock(bind) {
+    if (bind === scrollBlocked) return;
+    scrollBlocked = bind;
+    var opts = { passive: false, capture: true };
+    var method = bind ? 'addEventListener' : 'removeEventListener';
+    window[method]('wheel', onBlockScroll, opts);
+    window[method]('touchmove', onBlockScroll, opts);
+    document[method]('wheel', onBlockScroll, opts);
+    document[method]('touchmove', onBlockScroll, opts);
+    window[method]('keydown', onBlockKeys, opts);
+    if (bind) window.addEventListener('scroll', onKeepScrollPosition, { passive: true });
+    else window.removeEventListener('scroll', onKeepScrollPosition, { passive: true });
+  }
+
+  function scrollbarWidth() {
+    return Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+  }
+
+  function lockScroll() {
+    if (html.dataset.pfScrollLockSilovye === '1') return;
+    lockedScrollY = window.scrollY || window.pageYOffset || 0;
+    var sbw = scrollbarWidth();
+    prev.htmlOverscroll = html.style.overscrollBehavior;
+    prev.bodyOverscroll = body.style.overscrollBehavior;
+    prev.htmlOverflow = html.style.overflow;
+    prev.bodyOverflow = body.style.overflow;
+    prev.htmlPaddingRight = html.style.paddingRight;
+    prev.bodyPaddingRight = body.style.paddingRight;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    if (sbw > 0) body.style.paddingRight = sbw + 'px';
+    html.style.overscrollBehavior = 'none';
+    body.style.overscrollBehavior = 'none';
+    html.dataset.pfScrollLockSilovye = '1';
+    bindScrollBlock(true);
+  }
+
+  function unlockScroll() {
+    if (html.dataset.pfScrollLockSilovye !== '1') {
+      bindScrollBlock(false);
+      return;
+    }
+    html.style.overscrollBehavior = prev.htmlOverscroll;
+    body.style.overscrollBehavior = prev.bodyOverscroll;
+    html.style.overflow = prev.htmlOverflow;
+    body.style.overflow = prev.bodyOverflow;
+    html.style.paddingRight = prev.htmlPaddingRight;
+    body.style.paddingRight = prev.bodyPaddingRight;
+    delete html.dataset.pfScrollLockSilovye;
+    bindScrollBlock(false);
+    window.scrollTo(0, lockedScrollY);
+  }
+
+  function showSiteDim() {
+    if (siteDim) return;
+    siteDim = document.createElement('div');
+    siteDim.id = 'popovich-tariffs-silovye-site-dim';
+    siteDim.setAttribute('aria-hidden', 'true');
+    siteDim.style.cssText = [
+      'position:fixed', 'top:0', 'left:0', 'width:100vw',
+      'height:100vh', 'height:100dvh', 'z-index:' + DIM_Z,
+      'background:rgba(0,0,0,0.4)', 'opacity:0',
+      'transition:opacity .3s ease-in-out', 'touch-action:none'
+    ].join(';');
+    siteDim.addEventListener('click', requestClose);
+    siteDim.addEventListener('wheel', onBlockScroll, { passive: false });
+    siteDim.addEventListener('touchmove', onBlockScroll, { passive: false });
+    document.body.appendChild(siteDim);
+    requestAnimationFrame(function () { if (siteDim) siteDim.style.opacity = '1'; });
+  }
+
+  function hideSiteDim() {
+    if (!siteDim) return;
+    var el = siteDim;
+    siteDim = null;
+    el.style.opacity = '0';
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+  }
+
+  function hideTildaChrome() {
+    restoreTildaChrome();
+    var seen = [];
+    function hideEl(el) {
+      if (!el || seen.indexOf(el) !== -1) return;
+      if (el === wrap || wrap.contains(el) || el === siteDim) return;
+      seen.push(el);
+      chromeHidden.push({
+        el: el,
+        visibility: el.style.visibility,
+        pointerEvents: el.style.pointerEvents,
+        opacity: el.style.opacity
+      });
+      el.style.visibility = 'hidden';
+      el.style.pointerEvents = 'none';
+      el.style.opacity = '0';
+    }
+    ['#t-header', '.t-header', '.t-header__fixedcontainer', '.t450', '.t282', '.tmenu-mobile', '.t-menuburger']
+      .forEach(function (sel) { document.querySelectorAll(sel).forEach(hideEl); });
+  }
+
+  function restoreTildaChrome() {
+    chromeHidden.forEach(function (item) {
+      item.el.style.visibility = item.visibility;
+      item.el.style.pointerEvents = item.pointerEvents;
+      item.el.style.opacity = item.opacity;
+    });
+    chromeHidden = [];
+  }
+
+  function elevateLayer(on) {
+    if (on) {
+      if (!layerSaved) {
+        prev.wrapPosition = wrap.style.position;
+        prev.wrapZ = wrap.style.zIndex;
+        prev.wrapHeight = wrap.style.height;
+        prev.iframePosition = iframe.style.position;
+        prev.iframeZ = iframe.style.zIndex;
+        prev.iframeTop = iframe.style.top;
+        prev.iframeLeft = iframe.style.left;
+        prev.iframeRight = iframe.style.right;
+        prev.iframeBottom = iframe.style.bottom;
+        prev.iframeWidth = iframe.style.width;
+        prev.iframeHeight = iframe.style.height;
+        layerSaved = true;
+      }
+      var spacer = lastContentHeight || iframe.offsetHeight || 600;
+      wrap.style.position = 'relative';
+      wrap.style.zIndex = FRAME_Z;
+      wrap.style.height = spacer + 'px';
+      iframe.style.position = 'fixed';
+      iframe.style.top = '0';
+      iframe.style.left = '0';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.zIndex = FRAME_Z;
+      return;
+    }
+    if (!layerSaved) return;
+    wrap.style.position = prev.wrapPosition;
+    wrap.style.zIndex = prev.wrapZ;
+    wrap.style.height = prev.wrapHeight;
+    iframe.style.position = prev.iframePosition;
+    iframe.style.zIndex = prev.iframeZ;
+    iframe.style.top = prev.iframeTop;
+    iframe.style.left = prev.iframeLeft;
+    iframe.style.right = prev.iframeRight;
+    iframe.style.bottom = prev.iframeBottom;
+    iframe.style.width = prev.iframeWidth || '100%';
+    iframe.style.height = lastContentHeight ? lastContentHeight + 'px' : prev.iframeHeight;
+    layerSaved = false;
+  }
+
+  function setModalOpen(open) {
+    open = !!open;
+    if (modalOpen === open) {
+      if (open) sendViewport();
+      return;
+    }
+    modalOpen = open;
+    if (modalOpen) {
+      lockScroll();
+      elevateLayer(true);
+      sendViewport();
+      hideTildaChrome();
+      showSiteDim();
+      requestAnimationFrame(sendViewport);
+      setTimeout(sendViewport, 30);
+    } else {
+      elevateLayer(false);
+      hideSiteDim();
+      restoreTildaChrome();
+      unlockScroll();
+    }
+  }
+
+  window.addEventListener('message', function (event) {
+    if (event.source !== iframe.contentWindow) return;
+    var data = event.data;
+    if (!data || typeof data !== 'object') return;
+    if (data.type === RESIZE_TYPE) {
+      applyHeight(Number(data.height));
+      return;
+    }
+    if (data.type === CLOSING_TYPE) {
+      hideSiteDim();
+      return;
+    }
+    if (data.type === MODAL_TYPE) setModalOpen(!!data.open);
+  });
+
+  window.addEventListener('resize', sendViewport);
+  window.addEventListener('orientationchange', function () { setTimeout(sendViewport, 120); });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', sendViewport);
+    window.visualViewport.addEventListener('scroll', sendViewport);
+  }
+
+  iframe.addEventListener('load', function () {
+    try { iframe.contentWindow.postMessage({ type: PING_TYPE }, '*'); } catch (e) {}
+  });
+})();
+</script>

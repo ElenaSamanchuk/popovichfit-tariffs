@@ -1,61 +1,72 @@
 # PopovichFit — виджет тарифов для Тильды
 
-Статический виджет (HTML/CSS/JS) с админкой. Публичная страница встраивается в Тильду через iframe. Весь контент живёт в `config.json`.
+Две отдельные публичные страницы (два iframe) и две отдельные админки. Контент живёт в JSON и публикуется через GitHub Pages.
 
-- **Страница тарифов:** https://elenasamanchuk.github.io/popovichfit-tariffs/
-- **Админка:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin.html
-- **Локально:** `/Users/elena/Projects/popovichfit-tariffs`
+## Публичные страницы
 
-## Как устроены обновления
+- **Коррекция:** https://elenasamanchuk.github.io/popovichfit-tariffs/korrekciya.html
+- **Силовые:** https://elenasamanchuk.github.io/popovichfit-tariffs/silovye.html
+- **Выбор курса:** https://elenasamanchuk.github.io/popovichfit-tariffs/ (старый `/` больше не один виджет)
 
-1. Открываете админку.
-2. Вставляете GitHub Personal Access Token с правом `repo` (хранится только в `localStorage` браузера, в репозиторий не попадает).
-3. Правите цены, ссылки, тексты, картинки — справа живое превью.
-4. Нажимаете **Сохранить в GitHub**. Админка коммитит `config.json` через GitHub Contents API.
-5. GitHub Pages обновляет публичную страницу. Iframe на Тильде подтягивает новый `config.json` (`cache: no-store` + `?t=`).
+## Админки
 
-### Как создать токен
+Каждая админка правит **только свой** файл и коммитит его в `main` через GitHub Contents API. Превью справа — черновик в браузере. Живая страница и iframe на Тильде меняются только после **«Сохранить в GitHub»**.
 
-GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token.
+- **Админка коррекции:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin-korrekciya.html → `config-korrekciya.json`
+- **Админка силовых:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin-silovye.html → `config-silovye.json`
+- **Выбор админки:** https://elenasamanchuk.github.io/popovichfit-tariffs/admin.html
 
-Нужный scope: **`repo`**.
+Черновики не пересекаются: `PF_ADMIN_DRAFT_korrekciya` и `PF_ADMIN_DRAFT_silovye`.
+
+### Как сохранить изменение
+
+1. Откройте нужную админку.
+2. Вставьте GitHub Personal Access Token с правом `repo` (хранится только в `localStorage` браузера).
+3. Правите цены, ссылки, тексты — справа превью.
+4. Нажмите **Сохранить в GitHub**. Админка записывает JSON в репозиторий.
+5. GitHub Pages пересобирает сайт. Виджет грузит конфиг с `cache: no-store` и `?t=`.
+
+Нужный scope токена: **`repo`**.
 
 ## Как вставить на Тильду
 
-1. В редакторе страницы добавьте блок **HTML-код (T123)**.
-2. Вставьте содержимое файла [`tilda-embed.html`](tilda-embed.html).
-3. Опубликуйте страницу.
+На каждую страницу Тильды — свой блок **HTML-код (T123)**.
 
-Iframe сам пишет высоту родителю через `postMessage` (`popovich-tariffs-resize`). Попап подписки сообщает Тильде, что нужно затемнение и блок скролла (`popovich-tariffs-modal`) — тот же протокол, что у виджета оборудования Kochfit.
+- Курс коррекция: содержимое [`tilda-embed-korrekciya.html`](tilda-embed-korrekciya.html)  
+  iframe: `…/korrekciya.html`, id `popovich-tariffs-korrekciya-*`
+- Курс силовые: содержимое [`tilda-embed-silovye.html`](tilda-embed-silovye.html)  
+  iframe: `…/silovye.html`, id `popovich-tariffs-silovye-*`
 
-## Логика тарифов
+Оба блока можно поставить на один сайт: id разные, протокол `postMessage` тот же (`popovich-tariffs-resize` / `popovich-tariffs-modal`). Каждый скрипт слушает только свой iframe.
 
-Как на [popovichfit.ru/new-course](https://popovichfit.ru/new-course):
+## Откуда контент
 
-- В карточке 1 / 3 / 6 потоков — кнопка **Купить** открывает ссылку `lk.popovichfit.ru/payments/tariff_…/checkout`.
-- Опция **Подписка** и кнопка плашки открывают новый попап из Figma.
-- В попапе выбирается тариф подписки, кнопка ведёт на его ссылку (ссылки подписки пока пустые — пропишите в админке, когда появятся).
-
-Стартовые цены и ссылки разовых тарифов взяты с живой страницы `/new-course` (`window.PF_CARDS`: `korekciya` / `korekciya-trener` — именно они сейчас крутятся на блоке «Силовой»).
+Тексты шапок, карточек и бейджей — с [popovichfit.ru/new-course](https://popovichfit.ru/new-course) (блоки «Курс коррекция» и «Курс силовой»). Цены и ссылки оплаты — из `window.PF_CARDS`. Плашка и попап подписки новые: ссылки подписки пока пустые, их можно прописать в админке.
 
 ## Файлы
 
 | Файл | Назначение |
 | --- | --- |
-| `index.html` | Публичный виджет |
-| `admin.html` | Админка |
-| `config.json` | Весь контент |
-| `tilda-embed.html` | Готовый HTML+JS для Тильды |
-| `js/widget.js` | Рендер + postMessage |
-| `js/admin.js` | Формы + GitHub API |
+| `korrekciya.html` | Публичный виджет коррекции |
+| `silovye.html` | Публичный виджет силовых |
+| `config-korrekciya.json` | Контент коррекции |
+| `config-silovye.json` | Контент силовых |
+| `config.json` | Копия силовых (совместимость) |
+| `admin-korrekciya.html` | Админка коррекции |
+| `admin-silovye.html` | Админка силовых |
+| `tilda-embed-korrekciya.html` | Готовый HTML+JS для Тильды, коррекция |
+| `tilda-embed-silovye.html` | Готовый HTML+JS для Тильды, силовые |
+| `js/widget.js` | Рендер, читает `data-config` |
+| `js/admin.js` | Формы + запись в GitHub |
 
 ## Локальный просмотр
-
-Откройте `index.html` или `admin.html` через любой статический сервер, например:
 
 ```bash
 cd ~/Projects/popovichfit-tariffs
 python3 -m http.server 8080
 ```
 
-Админка: http://localhost:8080/admin.html
+- http://localhost:8080/korrekciya.html
+- http://localhost:8080/silovye.html
+- http://localhost:8080/admin-korrekciya.html
+- http://localhost:8080/admin-silovye.html

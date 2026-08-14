@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru" data-course="silovye">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Админка — курс силовые</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin">
+    <aside class="admin__form">
+      <div class="bar">
+        <h1>Админка: силовые</h1>
+        <p class="lead">Эта страница правит только <code>config-silovye.json</code>. «Сохранить в GitHub» коммитит файл в <code>main</code> — после сборки Pages меняется живая <a href="silovye.html" target="_blank" rel="noopener">silovye.html</a> и iframe на Тильде. Превью справа — черновик в браузере, не публикация.</p>
+        <div class="course-tabs" role="navigation" aria-label="Курс">
+          <a class="course-tab" href="admin-korrekciya.html">Коррекция</a>
+          <a class="course-tab is-active" href="admin-silovye.html">Силовые</a>
+        </div>
+        <label for="token">GitHub Personal Access Token (scope <code>repo</code>)</label>
+        <input id="token" type="password" autocomplete="off" placeholder="ghp_… токен хранится только в этом браузере">
+        <p class="hint">Создать: GitHub → Settings → Developer settings → Personal access tokens → Fine-grained или classic с правом <b>repo</b>. Токен не попадает в репозиторий.</p>
+        <label for="repo">Репозиторий</label>
+        <input id="repo" type="text" value="ElenaSamanchuk/popovichfit-tariffs">
+        <label for="image-file">Загрузить картинку плашки в GitHub</label>
+        <input id="image-file" type="file" accept="image/*">
+        <div class="row" style="margin-top:12px">
+          <button type="button" class="btn" id="save">Сохранить в GitHub</button>
+          <button type="button" class="btn btn--ghost" id="reload-preview">Обновить превью</button>
+        </div>
+        <p class="status" id="status"></p>
+      </div>
+      <div id="form-root"></div>
+    </aside>
+    <section class="admin__preview">
+      <div class="admin__preview-bar">
+        <strong>Превью: силовые</strong>
+        <span class="hint">Черновик. На Тильду уйдёт только после сохранения в GitHub.</span>
+      </div>
+      <iframe id="preview" src="silovye.html?preview=1" title="Превью курса силовые"></iframe>
+    </section>
+  </div>
+  <script src="js/admin.js"></script>
+</body>
+</html>

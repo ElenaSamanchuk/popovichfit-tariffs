@@ -5,36 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Админка тарифов PopovichFit</title>
   <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .admin-pick { max-width: 560px; margin: 48px auto; padding: 0 20px; }
+    .admin-pick h1 { margin-bottom: 8px; }
+    .admin-pick .lead { margin-bottom: 20px; }
+  </style>
 </head>
 <body>
-  <div class="admin">
-    <aside class="admin__form">
-      <div class="bar">
-        <h1>Админка тарифов</h1>
-        <p class="lead">Меняйте тексты, цены и ссылки — справа сразу видно результат. «Сохранить в GitHub» обновляет живую страницу, которую показывает iframe на Тильде.</p>
-        <label for="token">GitHub Personal Access Token (scope <code>repo</code>)</label>
-        <input id="token" type="password" autocomplete="off" placeholder="ghp_… токен хранится только в этом браузере">
-        <p class="hint">Создать: GitHub → Settings → Developer settings → Personal access tokens → Fine-grained или classic с правом <b>repo</b>. Токен не попадает в репозиторий.</p>
-        <label for="repo">Репозиторий</label>
-        <input id="repo" type="text" value="ElenaSamanchuk/popovichfit-tariffs">
-        <label for="image-file">Загрузить картинку плашки в GitHub</label>
-        <input id="image-file" type="file" accept="image/*">
-        <div class="row" style="margin-top:12px">
-          <button type="button" class="btn" id="save">Сохранить в GitHub</button>
-          <button type="button" class="btn btn--ghost" id="reload-preview">Обновить превью</button>
-        </div>
-        <p class="status" id="status"></p>
-      </div>
-      <div id="form-root"></div>
-    </aside>
-    <section class="admin__preview">
-      <div class="admin__preview-bar">
-        <strong>Живое превью</strong>
-        <span class="hint">Черновик в этом браузере. На Тильду уйдёт только после сохранения.</span>
-      </div>
-      <iframe id="preview" src="index.html?preview=1" title="Превью тарифов"></iframe>
-    </section>
-  </div>
-  <script src="js/admin.js"></script>
+  <main class="admin-pick">
+    <h1>Админка тарифов</h1>
+    <p class="lead">Две отдельные админки. Каждая пишет свой JSON в GitHub — после сохранения обновляется живая страница и iframe на Тильде.</p>
+    <div class="course-tabs">
+      <a class="course-tab" href="admin-korrekciya.html">Коррекция</a>
+      <a class="course-tab" href="admin-silovye.html">Силовые</a>
+    </div>
+    <p class="hint">Коррекция → <code>config-korrekciya.json</code> → <code>korrekciya.html</code><br>
+      Силовые → <code>config-silovye.json</code> → <code>silovye.html</code></p>
+  </main>
+  <script>
+    (function () {
+      var course = new URLSearchParams(location.search).get("course");
+      if (course === "korrekciya") location.replace("admin-korrekciya.html");
+      if (course === "silovye" || course === "silovoj") location.replace("admin-silovye.html");
+    })();
+  </script>
 </body>
 </html>

@@ -69,6 +69,18 @@ h1 { font-size: 20px; margin: 0 0 8px; }
   border-bottom: 1px solid var(--a-line);
 }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.course-tabs { display: flex; gap: 8px; margin: 0 0 16px; }
+.course-tab {
+  appearance: none; border: 1px solid var(--a-line);
+  background: #eef2f6; color: var(--a-text);
+  border-radius: 8px; padding: 8px 14px;
+  font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
+  text-decoration: none; display: inline-block;
+}
+.course-tab.is-active {
+  background: linear-gradient(52deg, #6297d2, #3e78b8);
+  color: #fff; border-color: transparent;
+}
 label { display: block; font-size: 12px; font-weight: 600; margin: 10px 0 4px; }
 input[type="text"], input[type="url"], input[type="password"], textarea, select {
   width: 100%;
