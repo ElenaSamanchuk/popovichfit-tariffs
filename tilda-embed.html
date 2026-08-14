@@ -72,6 +72,25 @@
     return { offsetTop: Math.round(offsetTop), height: Math.round(height) };
   }
 
+  function ensureModalRoom() {
+    var m = viewMetrics();
+    var minHeight = Math.round(m.viewHeight * 0.9);
+    var slice = visibleSlice();
+    if (slice.height >= minHeight) return;
+    var rect = iframe.getBoundingClientRect();
+    var y = window.scrollY || window.pageYOffset || 0;
+    var nextY = y;
+    if (rect.bottom < m.viewBottom - 2) {
+      nextY = y - (m.viewBottom - rect.bottom);
+    }
+    nextY = Math.max(0, nextY);
+    if (Math.abs(nextY - y) < 1) return;
+    var prevBehavior = html.style.scrollBehavior;
+    html.style.scrollBehavior = 'auto';
+    window.scrollTo(0, nextY);
+    html.style.scrollBehavior = prevBehavior;
+  }
+
   function sendViewport() {
     if (!modalOpen) return;
     var slice = visibleSlice();
@@ -230,6 +249,7 @@
     }
     modalOpen = open;
     if (modalOpen) {
+      ensureModalRoom();
       elevateLayer(true);
       sendViewport();
       lockScroll();

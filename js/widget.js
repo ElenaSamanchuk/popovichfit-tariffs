@@ -11,8 +11,11 @@
     config: null,
     selected: {},
     popupPlan: 0,
-    popupOpen: false
+    popupOpen: false,
+    popupLeaving: false
   };
+  var inIframe = window.parent && window.parent !== window;
+  var leaveMs = 300;
 
   function $(sel, root) {
     return (root || document).querySelector(sel);
@@ -41,30 +44,77 @@
   }
 
   function sendHeight() {
+    if (state.popupOpen || state.popupLeaving) return;
     var root = $("#pf-root");
     if (!root) return;
-    var height = Math.ceil(Math.max(
-      root.scrollHeight,
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight
-    ));
+    var widget = $(".pf-widget");
+    if (!widget) return;
+    var height = Math.ceil(widget.getBoundingClientRect().height || widget.scrollHeight);
+    if (height < 100) return;
     postToParent({ type: RESIZE_TYPE, height: height });
+  }
+
+  function applyViewport(offsetTop, height, mode) {
+    var root = document.documentElement;
+    if (mode === "fixed") {
+      root.classList.add("pf-iframe-fixed");
+      root.style.setProperty("--pf-vis-top", "0px");
+      root.style.setProperty("--pf-vis-height", "100%");
+      return;
+    }
+    root.classList.remove("pf-iframe-fixed");
+    var top = Math.max(0, Math.round(Number(offsetTop) || 0));
+    var h = Math.max(120, Math.round(Number(height) || 0));
+    root.style.setProperty("--pf-vis-top", top + "px");
+    root.style.setProperty("--pf-vis-height", h + "px");
+  }
+
+  function clearViewport() {
+    var root = document.documentElement;
+    root.classList.remove("pf-iframe-fixed");
+    root.classList.remove("pf-await-viewport");
+    root.style.removeProperty("--pf-vis-top");
+    root.style.removeProperty("--pf-vis-height");
   }
 
   function setPopupOpen(open) {
     open = !!open;
     var overlay = $("#pf-overlay");
     if (!overlay) return;
-    if (state.popupOpen === open) return;
-    if (!open && state.popupOpen) {
-      postToParent({ type: CLOSING_TYPE });
+    if (open && state.popupLeaving) return;
+    if (state.popupOpen === open) {
+      if (open) postToParent({ type: MODAL_TYPE, open: true });
+      return;
     }
-    state.popupOpen = open;
-    overlay.classList.toggle("is-open", open);
-    overlay.setAttribute("aria-hidden", open ? "false" : "true");
-    document.body.classList.toggle("pf-lock", open);
-    postToParent({ type: MODAL_TYPE, open: open });
-    sendHeight();
+    if (!open && state.popupOpen) {
+      state.popupLeaving = true;
+      postToParent({ type: CLOSING_TYPE });
+      overlay.classList.add("is-leaving");
+      overlay.classList.remove("is-open");
+      setTimeout(function () {
+        state.popupOpen = false;
+        state.popupLeaving = false;
+        overlay.classList.remove("is-leaving");
+        overlay.setAttribute("aria-hidden", "true");
+        document.documentElement.classList.remove("pf-modal-open");
+        document.body.classList.remove("pf-lock");
+        clearViewport();
+        postToParent({ type: MODAL_TYPE, open: false });
+      }, leaveMs);
+      return;
+    }
+    state.popupOpen = true;
+    overlay.classList.remove("is-leaving");
+    overlay.classList.add("is-open");
+    overlay.setAttribute("aria-hidden", "false");
+    document.documentElement.classList.add("pf-modal-open");
+    document.body.classList.add("pf-lock");
+    if (inIframe) document.documentElement.classList.add("pf-await-viewport");
+    else {
+      var vv = window.visualViewport;
+      applyViewport(vv ? vv.offsetTop : 0, vv ? vv.height : window.innerHeight);
+    }
+    postToParent({ type: MODAL_TYPE, open: true });
   }
 
   function openPayment(url) {
@@ -176,7 +226,8 @@
         subs.map(function (o) { return renderOption(card, o, selectedId); }).join("") +
         '<div class="pf-price">' +
           '<div>' +
-            '<div class="pf-price__name">' + esc(card.priceLabel) + "</div>" +
+            '<div class="pf-price__name pf-price__name--desk">' + esc(card.priceLabel) + "</div>" +
+            '<div class="pf-price__name pf-price__name--mob">' + esc(card.priceLabelMobile || card.priceLabel) + "</div>" +
             (card.discountUntil ? '<p class="pf-price__until">' + esc(card.discountUntil) + "</p>" : "") +
           "</div>" +
           '<div class="pf-price__col">' +
@@ -264,23 +315,41 @@
     );
   }
 
+  function paintPopupContent() {
+    var cfg = state.config;
+    var overlay = $("#pf-overlay");
+    if (!cfg || !overlay) return;
+    var keepOpen = overlay.classList.contains("is-open");
+    var keepLeaving = overlay.classList.contains("is-leaving");
+    var html = renderPopup(cfg);
+    var wrap = document.createElement("div");
+    wrap.innerHTML = html;
+    var next = wrap.firstElementChild;
+    if (!next) return;
+    next.classList.toggle("is-open", keepOpen);
+    next.classList.toggle("is-leaving", keepLeaving);
+    next.setAttribute("aria-hidden", keepOpen ? "false" : "true");
+    overlay.replaceWith(next);
+  }
+
   function paint() {
     var cfg = state.config;
     var root = $("#pf-root");
     if (!cfg || !root) return;
-    root.innerHTML =
+    var overlay = $("#pf-overlay");
+    var widgetHtml =
       '<div class="pf-widget">' +
         renderHeader(cfg) +
         renderPlashka(cfg) +
         renderCards(cfg) +
-      "</div>" +
-      renderPopup(cfg);
-    if (state.popupOpen) {
-      var overlay = $("#pf-overlay");
-      if (overlay) {
-        overlay.classList.add("is-open");
-        overlay.setAttribute("aria-hidden", "false");
-      }
+      "</div>";
+    if (overlay && state.popupOpen) {
+      var widget = $(".pf-widget");
+      if (widget) widget.outerHTML = widgetHtml;
+      else root.insertAdjacentHTML("afterbegin", widgetHtml);
+      paintPopupContent();
+    } else {
+      root.innerHTML = widgetHtml + renderPopup(cfg);
     }
     requestAnimationFrame(sendHeight);
   }
@@ -326,7 +395,9 @@
     }
     if (action === "popup-plan") {
       state.popupPlan = Number(btn.getAttribute("data-plan")) || 0;
-      paint();
+      document.querySelectorAll(".pf-plan").forEach(function (el, i) {
+        el.classList.toggle("is-active", i === state.popupPlan);
+      });
       return;
     }
     if (action === "popup-buy") {
@@ -352,18 +423,29 @@
     window.addEventListener("message", function (event) {
       var data = event.data;
       if (!data || typeof data !== "object") return;
-      if (data.type === PING_TYPE) sendHeight();
+      if (data.type === PING_TYPE) {
+        sendHeight();
+        if (state.popupOpen) postToParent({ type: MODAL_TYPE, open: true });
+      }
       if (data.type === CLOSE_TYPE) setPopupOpen(false);
-      if (data.type === VIEWPORT_TYPE && data.height) {
-        var overlay = $("#pf-overlay");
-        if (overlay && state.popupOpen) {
-          overlay.style.alignItems = "flex-start";
-          overlay.style.paddingTop = Math.max(8, Number(data.offsetTop) || 8) + "px";
-        }
+      if (data.type === VIEWPORT_TYPE) {
+        applyViewport(data.offsetTop, data.height, data.mode);
+        document.documentElement.classList.remove("pf-await-viewport");
       }
       if (data.type === CONFIG_TYPE && data.config) applyConfig(data.config);
     });
-    window.addEventListener("resize", sendHeight);
+    function syncStandaloneViewport() {
+      if (inIframe || !state.popupOpen || !window.visualViewport) return;
+      applyViewport(window.visualViewport.offsetTop, window.visualViewport.height);
+    }
+    window.addEventListener("resize", function () {
+      syncStandaloneViewport();
+      sendHeight();
+    });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", syncStandaloneViewport);
+      window.visualViewport.addEventListener("scroll", syncStandaloneViewport);
+    }
     if (window.ResizeObserver) {
       var ro = new ResizeObserver(sendHeight);
       if (document.body) ro.observe(document.body);
@@ -397,6 +479,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    if (inIframe) document.body.classList.add("pf-embedded");
     bind();
     loadConfig();
     setTimeout(sendHeight, 300);
