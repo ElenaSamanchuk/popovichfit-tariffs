@@ -1,65 +1,66 @@
 @font-face {
   font-family: "Involve";
   font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../assets/fonts/Involve-Regular.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Involve";
-  font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("../assets/fonts/Involve-Medium.ttf") format("truetype");
+  src: url("../assets/fonts/Involve-Medium.woff2") format("woff2"),
+       url("../assets/fonts/Involve-Medium.ttf") format("truetype");
 }
 @font-face {
   font-family: "Involve";
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("../assets/fonts/Involve-SemiBold.ttf") format("truetype");
+  src: url("../assets/fonts/Involve-SemiBold.woff2") format("woff2"),
+       url("../assets/fonts/Involve-SemiBold.ttf") format("truetype");
 }
 @font-face {
   font-family: "Involve";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("../assets/fonts/Involve-Bold.ttf") format("truetype");
+  src: url("../assets/fonts/Involve-Bold.woff2") format("woff2"),
+       url("../assets/fonts/Involve-Bold.ttf") format("truetype");
 }
 @font-face {
   font-family: "Manrope";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("../assets/fonts/manrope-400.ttf") format("truetype");
+  src: url("../assets/fonts/manrope-400.woff2") format("woff2"),
+       url("../assets/fonts/manrope-400.ttf") format("truetype");
 }
 @font-face {
   font-family: "Manrope";
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("../assets/fonts/manrope-500.ttf") format("truetype");
+  src: url("../assets/fonts/manrope-500.woff2") format("woff2"),
+       url("../assets/fonts/manrope-500.ttf") format("truetype");
 }
 @font-face {
   font-family: "Manrope";
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("../assets/fonts/manrope-600.ttf") format("truetype");
+  src: url("../assets/fonts/manrope-600.woff2") format("woff2"),
+       url("../assets/fonts/manrope-600.ttf") format("truetype");
 }
 @font-face {
   font-family: "Manrope";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("../assets/fonts/manrope-700.ttf") format("truetype");
+  src: url("../assets/fonts/manrope-700.woff2") format("woff2"),
+       url("../assets/fonts/manrope-700.ttf") format("truetype");
 }
 @font-face {
   font-family: "Manrope";
   font-style: normal;
   font-weight: 800;
   font-display: swap;
-  src: url("../assets/fonts/manrope-800.ttf") format("truetype");
+  src: url("../assets/fonts/manrope-800.woff2") format("woff2"),
+       url("../assets/fonts/manrope-800.ttf") format("truetype");
 }
 
 :root {
