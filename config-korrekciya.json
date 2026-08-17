@@ -16,8 +16,8 @@
     "newBadge": "NEW",
     "title": "Подписка: продолжай без лишних действий",
     "text": "Доступ к каждому новому потоку списывается автоматически. Никаких напоминалок — просто продолжаешь тренироваться.",
-    "priceFrom": "от 2 499 р.",
-    "priceInstead": "вместо 3 999 р. разово",
+    "priceFrom": "от 3 599 р.",
+    "priceInstead": "вместо 3 799 р. разово",
     "limeBadge": "ВЫГОДНЕЕ · ТОЛЬКО ДЛЯ ПРОДЛЕНЦЕВ",
     "features": [
       "✓  Не надо помнить про продление",
@@ -48,7 +48,7 @@
           "selectLabel": "выбрать",
           "newPrice": "3 799 р.",
           "oldPrice": "5 399 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_D9nEQP/checkout",
+          "link": "https://lk.popovichfit.ru/payments/tariff_7owz39/checkout",
           "action": "pay"
         },
         {
@@ -57,7 +57,7 @@
           "selectLabel": "выбрать",
           "newPrice": "9 599 р.",
           "oldPrice": "12 899 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_6KWjno/checkout",
+          "link": "https://lk.popovichfit.ru/payments/tariff_3PXZmo/checkout",
           "action": "pay"
         },
         {
@@ -66,7 +66,7 @@
           "selectLabel": "выбрать",
           "newPrice": "17 799 р.",
           "oldPrice": "24 399 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_qoAM5o/checkout",
+          "link": "https://lk.popovichfit.ru/payments/tariff_VKZmjo/checkout",
           "action": "pay"
         },
         {
@@ -74,7 +74,7 @@
           "label": "Подписка",
           "selectLabel": "выбрать",
           "badge": "выгоднее всего",
-          "newPrice": "от 2 499 р.",
+          "newPrice": "от 3 599 р.",
           "oldPrice": "",
           "link": "",
           "action": "popup"
@@ -101,7 +101,7 @@
           "selectLabel": "выбрать",
           "newPrice": "5 599 р.",
           "oldPrice": "7 699 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_Jo4XGo/checkout",
+          "link": "https://lk.popovichfit.ru/payments/tariff_5K5rnP/checkout",
           "action": "pay"
         },
         {
@@ -110,7 +110,7 @@
           "selectLabel": "выбрать",
           "newPrice": "14 899 р.",
           "oldPrice": "19 299 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_2Kd1wP/checkout",
+          "link": "https://lk.popovichfit.ru/payments/tariff_BKLmnP/checkout",
           "action": "pay"
         },
         {
@@ -119,7 +119,7 @@
           "selectLabel": "выбрать",
           "newPrice": "25 799 р.",
           "oldPrice": "34 799 р.",
-          "link": "https://lk.popovichfit.ru/payments/tariff_wo2xkP/checkout",
+          "link": "https://lk.popovichfit.ru/payments/tariff_VPxOpK/checkout",
           "action": "pay"
         },
         {
@@ -127,7 +127,7 @@
           "label": "Подписка",
           "selectLabel": "выбрать",
           "badge": "выгоднее всего",
-          "newPrice": "от 3 499 р.",
+          "newPrice": "от 5 399 р.",
           "oldPrice": "",
           "link": "",
           "action": "popup"
@@ -163,18 +163,18 @@
       {
         "id": "korekciya",
         "title": "Коррекция",
-        "oneTimePrice": "3 499 р.",
-        "subPrice": "2 499 р.",
-        "discountBadge": "- 10%",
-        "link": ""
+        "oneTimePrice": "3 799 р.",
+        "subPrice": "3 599 р.",
+        "discountBadge": "- 5%",
+        "link": "https://lk.popovichfit.ru/payments/tariff_7owz39/checkout?subscription=1"
       },
       {
         "id": "korekciya-trener",
         "title": "Коррекция с куратором",
-        "oneTimePrice": "4 999 р.",
-        "subPrice": "3 499 р.",
-        "discountBadge": "- 10%",
-        "link": ""
+        "oneTimePrice": "5 599 р.",
+        "subPrice": "5 399 р.",
+        "discountBadge": "- 4%",
+        "link": "https://lk.popovichfit.ru/payments/tariff_5K5rnP/checkout?subscription=1"
       }
     ]
   }
