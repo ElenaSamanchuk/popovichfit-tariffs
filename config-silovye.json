@@ -16,8 +16,8 @@
     "newBadge": "NEW",
     "title": "Подписка: продолжай без лишних действий",
     "text": "Доступ к каждому новому потоку списывается автоматически. Никаких напоминалок — просто продолжаешь тренироваться.",
-    "priceFrom": "от 2 499 р.",
-    "priceInstead": "вместо 3 999 р. разово",
+    "priceFrom": "от 4 199 р.",
+    "priceInstead": "вместо 4 299 р. разово",
     "limeBadge": "ВЫГОДНЕЕ · ТОЛЬКО ДЛЯ ПРОДЛЕНЦЕВ",
     "features": [
       "✓  Не надо помнить про продление",
@@ -74,7 +74,7 @@
           "label": "Подписка",
           "selectLabel": "выбрать",
           "badge": "выгоднее всего",
-          "newPrice": "от 2 499 р.",
+          "newPrice": "от 4 199 р.",
           "oldPrice": "",
           "link": "",
           "action": "popup"
@@ -127,7 +127,7 @@
           "label": "Подписка",
           "selectLabel": "выбрать",
           "badge": "выгоднее всего",
-          "newPrice": "от 3 499 р.",
+          "newPrice": "от 6 499 р.",
           "oldPrice": "",
           "link": "",
           "action": "popup"
@@ -163,18 +163,18 @@
       {
         "id": "silovoj",
         "title": "Силовой",
-        "oneTimePrice": "3 499 р.",
-        "subPrice": "2 499 р.",
-        "discountBadge": "- 10%",
-        "link": ""
+        "oneTimePrice": "4 299 р.",
+        "subPrice": "4 199 р.",
+        "discountBadge": "- 2%",
+        "link": "https://lk.popovichfit.ru/payments/tariff_pKzWbP/checkout?subscription=1"
       },
       {
         "id": "silovoj-trener",
         "title": "Силовой с куратором",
-        "oneTimePrice": "4 999 р.",
-        "subPrice": "3 499 р.",
-        "discountBadge": "- 10%",
-        "link": ""
+        "oneTimePrice": "6 699 р.",
+        "subPrice": "6 499 р.",
+        "discountBadge": "- 3%",
+        "link": "https://lk.popovichfit.ru/payments/tariff_YKgvro/checkout?subscription=1"
       }
     ]
   }
