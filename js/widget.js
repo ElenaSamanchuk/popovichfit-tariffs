@@ -408,7 +408,7 @@
           '<div class="pf-plan__row pf-plan__row--sub">' +
             "<span>" + esc(pop.subPriceLabel) + "</span>" +
             '<span class="pf-plan__subwrap">' +
-              (plan.discountBadge ? '<span class="pf-plan__disc">' + esc(plan.discountBadge) + "</span>" : "") +
+              // Product request: never show popup plan discount badges (−2%, −10%, etc.)
               '<span class="pf-plan__sub">' + esc(plan.subPrice) + "</span>" +
             "</span>" +
           "</div>" +

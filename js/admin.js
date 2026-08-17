@@ -664,7 +664,6 @@
       g.appendChild(field("Разовая цена", plan.oneTimePrice, function (v) { plan.oneTimePrice = v; }));
       g.appendChild(field("Цена подписки", plan.subPrice, function (v) { plan.subPrice = v; }));
       o.appendChild(g);
-      o.appendChild(field("Бейдж скидки", plan.discountBadge, function (v) { plan.discountBadge = v; }));
       o.appendChild(field("Ссылка оплаты подписки", plan.link, function (v) { plan.link = v; }, { type: "url" }));
       pop.appendChild(o);
     });

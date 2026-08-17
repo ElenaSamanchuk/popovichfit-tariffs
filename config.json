@@ -165,7 +165,7 @@
         "title": "Силовой",
         "oneTimePrice": "4 299 р.",
         "subPrice": "4 199 р.",
-        "discountBadge": "- 2%",
+        "discountBadge": "",
         "link": "https://lk.popovichfit.ru/payments/tariff_pKzWbP/checkout?subscription=1"
       },
       {
@@ -173,7 +173,7 @@
         "title": "Силовой с куратором",
         "oneTimePrice": "6 699 р.",
         "subPrice": "6 499 р.",
-        "discountBadge": "- 3%",
+        "discountBadge": "",
         "link": "https://lk.popovichfit.ru/payments/tariff_YKgvro/checkout?subscription=1"
       }
     ]

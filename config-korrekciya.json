@@ -165,7 +165,7 @@
         "title": "Коррекция",
         "oneTimePrice": "3 799 р.",
         "subPrice": "3 599 р.",
-        "discountBadge": "- 5%",
+        "discountBadge": "",
         "link": "https://lk.popovichfit.ru/payments/tariff_7owz39/checkout?subscription=1"
       },
       {
@@ -173,7 +173,7 @@
         "title": "Коррекция с куратором",
         "oneTimePrice": "5 599 р.",
         "subPrice": "5 399 р.",
-        "discountBadge": "- 4%",
+        "discountBadge": "",
         "link": "https://lk.popovichfit.ru/payments/tariff_5K5rnP/checkout?subscription=1"
       }
     ]
